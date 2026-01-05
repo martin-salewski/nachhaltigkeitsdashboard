@@ -140,12 +140,14 @@ export const waste = sqliteTable("waste", {
 export const commuteStats = sqliteTable("commute_stats", {
   id: int().primaryKey({ autoIncrement: true }),
   year: int().notNull(),
-  month: int().notNull(),
+  month: int().notNull(), // Used as semester: 1=WS, 2=SS
+  category: text().notNull(), // 'gesamt', 'studierende', 'mitarbeiter'
   mode: text().notNull(), // 'zu Fuß', 'Fahrrad', 'Auto', 'ÖPNV'
   percentage: real().notNull(),
-  personCount: int(),
+  personCount: int().notNull(),
 }, (table) => [
   index("commute_stats_time_idx").on(table.year, table.month),
+  index("commute_stats_category_idx").on(table.category),
 ]);
 
 // ============================================
