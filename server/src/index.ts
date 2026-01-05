@@ -2,8 +2,8 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { db } from './drizzle/db.js'
-import { commuteStats } from './drizzle/schema.js'
-import { eq, and, desc } from 'drizzle-orm'
+import { commuteStats, emissions } from './drizzle/schema.js'
+import { eq, and, desc, asc } from 'drizzle-orm'
 
 const app = new Hono()
 
@@ -51,6 +51,46 @@ app.get('/api/commute-stats/periods', async (c) => {
     year: p.year,
     semester: p.semester,
     label: p.semester === 1 ? `WS ${p.year}/${(p.year + 1).toString().slice(-2)}` : `SS ${p.year}`
+  }))
+  
+  return c.json(periodsWithLabels)
+})
+
+// GET /api/emissions - Get emissions data
+// Query params: year, month, category (optional: 'gesamt', 'strom', 'heizung', 'mobilitaet')
+app.get('/api/emissions', async (c) => {
+  const year = c.req.query('year')
+  const month = c.req.query('month')
+  const category = c.req.query('category') || 'gesamt'
+
+  const conditions = [eq(emissions.category, category)]
+  
+  if (year) {
+    conditions.push(eq(emissions.year, parseInt(year)))
+  }
+  if (month) {
+    conditions.push(eq(emissions.month, parseInt(month)))
+  }
+
+  const data = await db.select().from(emissions)
+    .where(and(...conditions))
+    .orderBy(asc(emissions.year), asc(emissions.month), asc(emissions.day))
+  
+  return c.json(data)
+})
+
+// GET /api/emissions/periods - Get available months
+app.get('/api/emissions/periods', async (c) => {
+  const data = await db.selectDistinct({ year: emissions.year, month: emissions.month })
+    .from(emissions)
+    .orderBy(desc(emissions.year), desc(emissions.month))
+  
+  const monthNames = ['jan', 'feb', 'mär', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dez']
+  
+  const periodsWithLabels = data.map(p => ({
+    year: p.year,
+    month: p.month,
+    label: monthNames[p.month - 1]
   }))
   
   return c.json(periodsWithLabels)
