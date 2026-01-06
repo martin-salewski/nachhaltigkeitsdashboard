@@ -1,4 +1,4 @@
-import { ChartRadialText } from "../ui/raidalchart";
+import { ChartRadialText } from "../ui/radialchart";
 
 function Profs() {
   const heading = 149;

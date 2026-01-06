@@ -15,7 +15,14 @@ export function DonutChart({ data, labels }: Props) {
     datasets: [
       {
         data,
-        backgroundColor: ["#6366F1", "#8B5CF6", "#60A5FA"],
+        backgroundColor: [
+          "#7DB8FF",
+          "#1D3A6A",
+          "#4D719C",
+          "#7196C6",
+          "#1F8FCE",
+          "#4DBAF7",
+        ],
         hoverOffset: 4,
       },
     ],

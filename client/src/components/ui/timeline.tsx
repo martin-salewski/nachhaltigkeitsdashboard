@@ -5,7 +5,7 @@ export type TimelineItem = {
 
 export function Timeline({ items }: { items: TimelineItem[] }) {
   return (
-    <ol className="relative border-l border-dashed border-gray-300">
+    <ol className="relative border-l border-dashed border-gray-300 list-none pl-0">
       {items.map((item, index) => (
         <li key={index} className="relative mb-6 ml-4">
           <span className="absolute -left-5.5 mt-1 flex h-3 w-3 rounded-full bg-[var(--hscolor-1)]" />

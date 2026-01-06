@@ -1,5 +1,5 @@
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { ChartRadialText } from "../ui/raidalchart";
+import { ChartRadialText } from "../ui/radialchart";
 
 function TotalScore() {
   const queryClient = useQueryClient();
