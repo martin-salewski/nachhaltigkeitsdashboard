@@ -53,7 +53,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: oklch(98.5% 0.002 247);
+  --color-background: oklch(94% 0 0);
   --color-foreground: oklch(14% 0.02 260);
   --color-card: oklch(100% 0 0);
   --color-card-foreground: oklch(14% 0.02 260);
