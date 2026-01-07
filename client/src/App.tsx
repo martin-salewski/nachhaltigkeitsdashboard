@@ -1,47 +1,48 @@
-import { useState } from "react";
-import "./App.css";
-import { Button } from "./components/ui/button";
-import TotalScore from "./components/cards/totalScore";
-import Students from "./components/cards/students";
-import Employees from "./components/cards/employee";
-import Profs from "./components/cards/profs";
-import Goals from "./components/cards/goals";
-import Emissions from "./components/cards/emissions";
-import Travel from "./components/cards/travel";
-import HeatMix from "./components/cards/heatMix";
-import ElectricityMix from "./components/cards/electricityMix";
-import FossilFuels from "./components/cards/fossilfuels";
-import StudentChart from "./components/cards/studentsChart";
-import LearningPlace from "./components/cards/learningPlace";
+import { AnreiseCard } from "@/components/dashboard/AnreiseCard";
+import { EmissionsCard } from "@/components/dashboard/EmissionsCard";
+import { BuildingRatingCard } from "@/components/dashboard/BuildingRatingCard";
+import { StatCard } from "@/components/dashboard/StatCard";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-row gap-3">
-        <TotalScore />
-        <Students />
-        <Employees />
-        <Profs />
-      </div>
-      <div className="flex flex-row gap-3 flex-start">
-        <div className="flex flex-row gap-3">
-          <Goals />
+    <div
+      className="min-h-screen p-6"
+      style={{ fontFamily: '"SimStd", sans-serif' }}
+    >
+      <div className="grid xl:grid-cols-12 gap-8 lg:grid-cols-9 md:grid-cols-6 sm:grid-cols-1">
+        <div className="xl:col-span-3 lg:col-span-3 md:col-span-3 md:row-span-3 sm:col-span-1 row-span-2">
+          <BuildingRatingCard />
         </div>
-        <Emissions />
-        <Travel />
-      </div>
-      <div className="flex flexrow gap-3">
-        <HeatMix />
-        <ElectricityMix />
-      </div>
-      <div className="flex flexrow gap-3">
-        <FossilFuels />
-      </div>
-      <div className="flex flexrow gap-3">
-        <StudentChart />
-        <LearningPlace />
+        <div className="row-span-1 xl:col-span-3 lg:col-span-2 md:col-span-3 sm:col-span-1">
+          <StatCard
+            value="100"
+            label="Emissionen"
+            change="10%"
+            changeType="positive"
+          />
+        </div>
+        <div className="row-span-1 xl:col-span-3 lg:col-span-2 md:col-span-3 sm:col-span-1">
+          <StatCard
+            value="100"
+            label="Emissionen"
+            change="10%"
+            changeType="positive"
+          />
+        </div>
+        <div className="row-span-1 xl:col-span-3 lg:col-span-2 md:col-span-3 sm:col-span-1">
+          <StatCard
+            value="100"
+            label="Emissionen"
+            change="10%"
+            changeType="positive"
+          />
+        </div>
+        <div className="row-span-2 xl:col-span-6 lg:col-span-6 md:col-span-6 sm:col-span-1">
+          <EmissionsCard />
+        </div>
+        <div className="row-span-2 xl:col-span-3 lg:col-span-3 md:col-span-3 sm:col-span-1">
+          <AnreiseCard />
+        </div>
       </div>
     </div>
   );
