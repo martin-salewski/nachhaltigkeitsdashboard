@@ -1,19 +1,17 @@
-import { Button } from "../ui/button";
 import { Timeline } from "../ui/timeline";
 import type { TimelineItem } from "../ui/timeline";
-import Arrow from "../../assets/icons/Vector.svg";
 import gsap from "gsap";
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-
+import { Separator } from "@/components/ui/separator";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRef, useState } from "react";
 
 const items: TimelineItem[] = [
   {
@@ -27,53 +25,90 @@ const items: TimelineItem[] = [
 ];
 
 function Goals() {
-  document.addEventListener("DOMContentLoaded", () => {
-    gsap.registerPlugin(ScrollTrigger);
-  });
+  const [isFlipped, setIsFlipped] = useState(false);
+  const innerRef = useRef(null);
+  const flip = () => {
+    setIsFlipped((prev) => {
+      const next = !prev;
+
+      gsap.to(innerRef.current, {
+        rotateY: next ? 180 : 0,
+        duration: 0.8,
+        ease: "power3.inOut",
+        transformPerspective: 10000,
+      });
+
+      return next;
+    });
+  };
 
   const heading = "Nachhaltigkeitsziele";
   return (
-    <div className="w-xl max-w-xs h-fit rounded-lg p-8 border shadow-lg relative">
-      <div className="flex flex-row">
-        <div className="flex flex-col">
-          <div className="w-80 h-14 gap-1 flex flex-col items-start">
-            <div>
-              <p className="text-[10] font-['Simple'] opacity-60 font-bold flex flex-start">
-                {heading}
-              </p>
-              <div className="w-full h-[1px] bg-gray-300"></div>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="font-['Simple'] opacity-60 text-md">
-                Jahr
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel className="font-['Simple'] opacity-60 text-md">
-                  My Account
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="font-['Simple'] opacity-60 text-md">
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="font-['Simple'] opacity-60 text-md">
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem className="font-['Simple'] opacity-60 text-md">
-                  Team
-                </DropdownMenuItem>
-                <DropdownMenuItem className="font-['Simple'] opacity-60 text-md">
-                  Subscription
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            ;
+    <div style={{ perspective: 1000 }}>
+      <div
+        className="relative"
+        ref={innerRef}
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <div
+          className="h-110 w-100 rounded-lg p-8 border bg-white shadow-lg relative"
+          style={{
+            backfaceVisibility: "hidden",
+          }}
+        >
+          <div className="w-full flex flex-col items-end gap-[8px]">
+            <p className="text-[12] font-['Simple'] opacity-60 font-bold flex flex-start w-full text-start">
+              {heading}
+            </p>
+            <Separator />
+            <Select>
+              <SelectTrigger className="w-fit">
+                <SelectValue placeholder="Select a fruit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Fruits</SelectLabel>
+                  <SelectItem value="apple">Apple</SelectItem>
+                  <SelectItem value="banana">Banana</SelectItem>
+                  <SelectItem value="blueberry">Blueberry</SelectItem>
+                  <SelectItem value="grapes">Grapes</SelectItem>
+                  <SelectItem value="pineapple">Pineapple</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <button
+            onClick={() => {
+              flip();
+            }}
+            aria-label="Info Anzeigen"
+            className="absolute top-3 right-3 bg-black/20 rounded-full text-sm font-bold w-5 h-5 text-white flex items-center justify-center font-['Helvetica']"
+          >
+            i
+          </button>
+          <div className="mt-4">
+            <Timeline items={items} />
           </div>
         </div>
-        <div className="absolute top-2 right-2 bg-gray-400 rounded-full w-5 h-5 text-white flex items-center justify-center font-['Helvetica']">
-          i
+        <div
+          className="w-100 h-110 rounded-lg p-8 border bg-white shadow-lg absolute inset-0"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+          }}
+        >
+          <button
+            onClick={() => {
+              flip();
+            }}
+            aria-label="Info Anzeigen"
+            className="absolute top-3 right-3 bg-black/20 rounded-full w-5 h-5 text-white flex items-center justify-center font-['Helvetica']"
+          >
+            x
+          </button>
         </div>
       </div>
-      <Timeline items={items}></Timeline>
     </div>
   );
 }

@@ -10,6 +10,9 @@ import Emissions from "./components/cards/emissions";
 import Travel from "./components/cards/travel";
 import HeatMix from "./components/cards/heatMix";
 import ElectricityMix from "./components/cards/electricityMix";
+import FossilFuels from "./components/cards/fossilfuels";
+import StudentChart from "./components/cards/studentsChart";
+import LearningPlace from "./components/cards/learningPlace";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -32,6 +35,13 @@ function App() {
       <div className="flex flexrow gap-3">
         <HeatMix />
         <ElectricityMix />
+      </div>
+      <div className="flex flexrow gap-3">
+        <FossilFuels />
+      </div>
+      <div className="flex flexrow gap-3">
+        <StudentChart />
+        <LearningPlace />
       </div>
     </div>
   );

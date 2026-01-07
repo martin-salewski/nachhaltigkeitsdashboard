@@ -11,8 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-function Emissions() {
-  const heading = "Emissionen";
+function LearningPlace() {
+  const heading = "Lernort";
   const [isFlipped, setIsFlipped] = useState(false);
   const innerRef = useRef(null);
   const flip = () => {
@@ -38,15 +38,15 @@ function Emissions() {
         style={{ transformStyle: "preserve-3d" }}
       >
         <div
-          className="w-2xl h-lg rounded-lg p-8 border shadow-lg"
+          className="w-90 h-120 rounded-lg p-8 border shadow-lg"
           style={{
             backfaceVisibility: "hidden",
           }}
         >
           <div>
-            <div className="w-xl h-lg flex flex-row">
-              <div className="h-fit flex flex-col">
-                <div className="h-14 gap-1 flex flex-col">
+            <div className="flex flex-row">
+              <div className="flex w-full flex-col">
+                <div className="flex justify-between w-full">
                   <div className=" flex flex-col items-start">
                     <p className="text-[10] font-['Simple'] opacity-60 font-bold flex flex-start">
                       {heading}
@@ -79,6 +79,29 @@ function Emissions() {
                     </DropdownMenu>
                   </div>
                 </div>
+                <div className="flex flex-col gap-8 items-start text-[14px]">
+                  <div className=" flex flex-row w-full">
+                    <p>Anzahl der Lehrberatungen</p>
+                    <div className="flex justify-end">
+                      <p className="font-bold">10</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-row w-full">
+                    <p>Anzahl der Lernplätze im Selbststudium</p>
+                    <p className="font-bold flex-end">10</p>
+                  </div>
+                  <div className="justify-around flex flex-row w-full">
+                    <p>Anzahl Forschungsprojekte</p>
+                    <p className="font-bold">10</p>
+                  </div>
+                  <div className="justify-around flex flex-row w-full">
+                    <p>Anzahl Werkstudentenstellen</p>
+                    <p className="font-bold">10</p>
+                  </div>
+                  <div className="justify-around flex flex-row w-full">
+                    <p>Studierendenzufriedenheit</p>
+                  </div>
+                </div>
               </div>
               <button
                 onClick={() => {
@@ -90,8 +113,6 @@ function Emissions() {
                 i
               </button>
             </div>
-
-            <ChartLineInteractive></ChartLineInteractive>
           </div>
         </div>
         <div
@@ -116,4 +137,4 @@ function Emissions() {
   );
 }
 
-export default Emissions;
+export default LearningPlace;
