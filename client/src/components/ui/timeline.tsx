@@ -28,7 +28,7 @@ export function Timeline({ items }: { items: TimelineItem[] }) {
           <li key={idx} className="relative flex gap-4">
             {/* left "rail": dot + dashed line */}
             <div className="relative flex justify-center">
-              <span className="mt-1 h-3 w-3 rounded-full bg-[var(--hscolor-1)]" />
+              <span className="mt-1 h-3 w-3 rounded-full bg-(--color-chart-1)" />
               {!isLast && (
                 <span
                   className="absolute top-3 -bottom-4 w-px border-l-2 border-dashed border-muted-foreground/40"

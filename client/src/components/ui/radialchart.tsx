@@ -30,7 +30,7 @@ export const ChartRadialText = ({ score }) => {
               gridType="circle"
               radialLines={false}
               stroke="none"
-              className="first:fill-muted last:fill-background"
+              className="first:fill-muted last:fill-white"
               polarRadius={[86, 74]}
             />
             <div className="rounded-full color-white shadow-lg"></div>
@@ -62,14 +62,14 @@ export const ChartRadialText = ({ score }) => {
                           <tspan
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-6xl font-bold font-['Simple']"
+                            className="fill-foreground text-6xl font-bold font-['SimStd']"
                           >
                             {score.toLocaleString()}
                           </tspan>
                           <tspan
                             x={viewBox.cx}
                             y={(viewBox.cy || 0) + 45}
-                            className="fill-muted-foreground font-['Simple'] text-8"
+                            className="fill-muted-foreground font-['SimStd'] text-8"
                           >
                             {score}/100
                           </tspan>

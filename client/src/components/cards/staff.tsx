@@ -1,16 +1,17 @@
 import { useRef, useState } from "react";
 import { gsap } from "gsap/gsap-core";
 import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@radix-ui/react-dropdown-menu";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChartBarStacked } from "../ui/stackedbarchart";
 
-function StudentChart() {
+function StaffChart() {
   const heading = "Personal";
   const [isFlipped, setIsFlipped] = useState(false);
   const innerRef = useRef(null);
@@ -50,29 +51,21 @@ function StudentChart() {
               </p>
               <div className="h-[1px] w-full bg-gray-300"></div>
               <div className="flex justify-end items-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="font-['Simple'] opacity-60 text-md border-1">
-                    Jahr
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel className="font-['Simple'] opacity-60 text-md border-1">
-                      2026
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2027
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2028
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2029
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2030
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Select>
+                  <SelectTrigger className="w-fit">
+                    <SelectValue placeholder="Select a fruit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Fruits</SelectLabel>
+                      <SelectItem value="apple">Apple</SelectItem>
+                      <SelectItem value="banana">Banana</SelectItem>
+                      <SelectItem value="blueberry">Blueberry</SelectItem>
+                      <SelectItem value="grapes">Grapes</SelectItem>
+                      <SelectItem value="pineapple">Pineapple</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-center">
                 <ChartBarStacked></ChartBarStacked>
@@ -102,4 +95,4 @@ function StudentChart() {
     </div>
   );
 }
-export default StudentChart;
+export default StaffChart;

@@ -1,105 +1,174 @@
-import { useRef, useState } from "react";
-import { gsap } from "gsap/gsap-core";
+import { useCallback, useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@radix-ui/react-dropdown-menu";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChartBarStacked } from "../ui/stackedbarchart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 function StudentChart() {
   const heading = "StudentInnen";
+
   const [isFlipped, setIsFlipped] = useState(false);
-  const innerRef = useRef(null);
-  const flip = () => {
-    setIsFlipped((prev) => {
-      const next = !prev;
+  const [isAnimating, setIsAnimating] = useState(false);
 
-      gsap.to(innerRef.current, {
-        rotateY: next ? 180 : 0,
-        duration: 0.8,
-        ease: "power3.inOut",
-        transformPerspective: 1000,
-      });
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const frontRef = useRef<HTMLDivElement | null>(null);
+  const backRef = useRef<HTMLDivElement | null>(null);
 
-      return next;
+  useEffect(() => {
+    if (!frontRef.current || !backRef.current) return;
+    frontRef.current.style.visibility = "visible";
+    backRef.current.style.visibility = "hidden";
+  }, []);
+
+  const flip = useCallback(() => {
+    if (
+      isAnimating ||
+      !wrapperRef.current ||
+      !frontRef.current ||
+      !backRef.current
+    )
+      return;
+
+    setIsAnimating(true);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsFlipped((prev) => !prev);
+        setIsAnimating(false);
+      },
     });
-  };
+
+    if (!isFlipped) {
+      tl.to(wrapperRef.current, {
+        rotateY: 90,
+        duration: 0.3,
+        ease: "power2.in",
+      })
+        .set(frontRef.current, { visibility: "hidden" })
+        .set(backRef.current, { visibility: "visible" })
+        .to(wrapperRef.current, {
+          rotateY: 180,
+          duration: 0.3,
+          ease: "power2.out",
+        });
+    } else {
+      tl.to(wrapperRef.current, {
+        rotateY: 90,
+        duration: 0.3,
+        ease: "power2.in",
+      })
+        .set(backRef.current, { visibility: "hidden" })
+        .set(frontRef.current, { visibility: "visible" })
+        .to(wrapperRef.current, {
+          rotateY: 0,
+          duration: 0.3,
+          ease: "power2.out",
+        });
+    }
+  }, [isFlipped, isAnimating]);
 
   return (
-    <div style={{ perspective: 1000 }}>
+    <div className="relative" style={{ perspective: 1000 }}>
       <div
+        ref={wrapperRef}
         className="relative"
-        ref={innerRef}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
-        <div
-          className="flex rounded-lg w-140 h-90 p-8 border shadow-lg"
-          style={{
-            backfaceVisibility: "hidden",
-          }}
-        >
-          <div className="flex flex-col w-full">
-            <div className="flex flex-col gap-1">
-              <p className="font-['Simple'] font-bold opacity-60 flex flex-start text-[10]">
-                {heading}
-              </p>
-              <div className="h-[1px] w-full bg-gray-300"></div>
-              <div className="flex justify-end items-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="font-['Simple'] opacity-60 text-md border-1">
-                    Jahr
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuLabel className="font-['Simple'] opacity-60 text-md border-1">
-                      2026
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2027
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2028
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2029
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                      2030
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+        <div ref={frontRef} style={{ backfaceVisibility: "hidden" }}>
+          <Card className="relative bg-white w-full h-full">
+            <CardHeader>
+              <CardTitle>
+                <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
+                  {heading}
+                </h1>
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <Separator className="bg-black/10 h-2" />
+
+              <div className="flex justify-end items-end mt-2">
+                <Select>
+                  <SelectTrigger className="w-fit">
+                    <SelectValue placeholder="Jahr" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Jahr</SelectLabel>
+                      <SelectItem value="2026">2026</SelectItem>
+                      <SelectItem value="2027">2027</SelectItem>
+                      <SelectItem value="2028">2028</SelectItem>
+                      <SelectItem value="2029">2029</SelectItem>
+                      <SelectItem value="2030">2030</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="flex justify-center">
-                <ChartBarStacked></ChartBarStacked>
+                <ChartBarStacked />
               </div>
-            </div>
-            <div className="flex flex-row justify-between"></div>
-          </div>
+            </CardContent>
+
+            <button
+              onClick={flip}
+              disabled={isAnimating}
+              className="absolute top-3 right-3 bg-gray-300 rounded-full w-5 h-5 text-white flex items-center justify-center disabled:opacity-50"
+              aria-label="Mehr Informationen"
+            >
+              i
+            </button>
+          </Card>
         </div>
+
+        {/* BACK */}
         <div
-          className="w-90 h-lg rounded-lg p-8 border shadow-lg absolute inset-0"
+          ref={backRef}
+          className="absolute inset-0"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
           }}
-        ></div>
-      </div>
+        >
+          <Card className="relative bg-white w-full h-full">
+            <CardHeader>
+              <CardTitle>
+                <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
+                  Über diese Karte
+                </h1>
+              </CardTitle>
+            </CardHeader>
 
-      <button
-        onClick={() => {
-          flip();
-        }}
-        aria-label="Info Anzeigen"
-        className="absolute top-2 right-2 bg-gray-400 rounded-full w-5 h-5 text-white flex items-center justify-center font-['Helvetica']"
-      >
-        i
-      </button>
+            <CardContent>
+              <Separator className="bg-black/10 h-2" />
+              <div className="mt-3 text-sm text-muted-foreground space-y-2">
+                <p>blabla</p>
+              </div>
+            </CardContent>
+
+            <button
+              onClick={flip}
+              disabled={isAnimating}
+              className="absolute top-3 right-3 bg-gray-300 rounded-full w-5 h-5 text-white flex items-center justify-center disabled:opacity-50"
+              aria-label="Zurück"
+            >
+              i
+            </button>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
+
 export default StudentChart;

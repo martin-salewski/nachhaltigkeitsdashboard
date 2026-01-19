@@ -1,121 +1,140 @@
-import { useRef, useState } from "react";
-import { gsap } from "gsap/gsap-core";
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@radix-ui/react-dropdown-menu";
+import gsap from "gsap";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Info, X } from "lucide-react";
 
 function FossilFuels() {
   const heading = "Fossile Brennstoffe";
-  const erdöl = "Erdöl";
+  const erdoel = "Erdöl";
   const erdgas = "Erdgas";
+
   const [isFlipped, setIsFlipped] = useState(false);
-  const innerRef = useRef(null);
-  const flip = () => {
-    setIsFlipped((prev) => {
-      const next = !prev;
+  const [isAnimating, setIsAnimating] = useState(false);
 
-      gsap.to(innerRef.current, {
-        rotateY: next ? 180 : 0,
-        duration: 0.8,
-        ease: "power3.inOut",
-        transformPerspective: 1000,
-      });
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const frontRef = useRef<HTMLDivElement | null>(null);
+  const backRef = useRef<HTMLDivElement | null>(null);
 
-      return next;
+  // initial: front visible, back hidden
+  useEffect(() => {
+    if (!frontRef.current || !backRef.current) return;
+    frontRef.current.style.visibility = "visible";
+    backRef.current.style.visibility = "hidden";
+  }, []);
+
+  const flipCard = useCallback(() => {
+    if (
+      isAnimating ||
+      !cardRef.current ||
+      !frontRef.current ||
+      !backRef.current
+    )
+      return;
+
+    setIsAnimating(true);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsFlipped((p) => !p);
+        setIsAnimating(false);
+      },
     });
-  };
+
+    if (!isFlipped) {
+      tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
+        .set(frontRef.current, { visibility: "hidden" })
+        .set(backRef.current, { visibility: "visible" })
+        .to(cardRef.current, {
+          rotateY: 180,
+          duration: 0.3,
+          ease: "power2.out",
+        });
+    } else {
+      tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
+        .set(backRef.current, { visibility: "hidden" })
+        .set(frontRef.current, { visibility: "visible" })
+        .to(cardRef.current, { rotateY: 0, duration: 0.3, ease: "power2.out" });
+    }
+  }, [isFlipped, isAnimating]);
 
   return (
-    <div style={{ perspective: 1000 }}>
+    <div className="perspective-[1000px] h-full">
       <div
-        className="relative"
-        ref={innerRef}
+        ref={cardRef}
+        className="relative h-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
-        <div
-          className="flex rounded-lg w-90 h-45 p-8 border shadow-lg"
-          style={{
-            backfaceVisibility: "hidden",
-          }}
-        >
-          <div className="flex flex-col w-full gap-1">
-            <div className="flex flex-col">
-              <p className="font-['Simple'] font-bold opacity-60 flex flex-start text-[10]">
-                {heading}
-              </p>
-              <div className="h-[1px] w-full bg-gray-300"></div>
-              <div className="flex flex-row justify-between mt-6">
+        <div ref={frontRef} style={{ backfaceVisibility: "hidden" }}>
+          <Card className="relative h-full w-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
+                <h1 className="font-['SimStd'] font-bold text-black/60 text-[10px]">
+                  {heading}
+                </h1>
+                <Separator className="bg-black/10 h-2" />
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="flex justify-between mt-2">
                 <div className="flex flex-col">
-                  <p className="font-'Simple'] text-[8] opacity-60 font-light">
-                    {erdöl}
-                  </p>
-                  <div>
-                    <p className="font-'Simple'] text-[8] font-bold">20 t</p>
-                  </div>
+                  <p className="text-[10px] text-black/50">{erdoel}</p>
+                  <p className="text-sm font-bold text-black/80">20 t</p>
                 </div>
+
                 <div className="flex flex-col">
-                  <p className="font-['Simple'] text-[8] opacity-60 font-light">
-                    {erdgas}
-                  </p>
-                  <div>
-                    <p className="font-'Simple'] text-[8] font-bold">10 t</p>
-                  </div>
-                </div>
-                <div className="flex mb-10 justify-end items-end">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="font-['Simple'] opacity-60 text-md border-1">
-                      Jahr
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel className="font-['Simple'] opacity-60 text-md border-1">
-                        2026
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                        2027
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                        2028
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                        2029
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="font-['Simple'] opacity-60 text-md border-1">
-                        2030
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <p className="text-[10px] text-black/50">{erdgas}</p>
+                  <p className="text-sm font-bold text-black/80">10 t</p>
                 </div>
               </div>
-              <div className="flex flex-row justify-between"></div>
-            </div>
-          </div>
+            </CardContent>
+
+            {/* Info button like Emissions */}
+            <button
+              onClick={flipCard}
+              disabled={isAnimating}
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              aria-label="Mehr Informationen"
+            >
+              <Info className="size-4" />
+            </button>
+          </Card>
         </div>
+
+        {/* BACK */}
         <div
-          className="w-90 h-lg rounded-lg p-8 border shadow-lg absolute inset-0"
+          ref={backRef}
+          className="absolute inset-0"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
+            visibility: "hidden",
           }}
-        ></div>
-      </div>
+        >
+          <Card className="relative h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-medium text-foreground/90">
+                Über diese Karte
+              </CardTitle>
+            </CardHeader>
+            <Separator className="mb-2 bg-black/10" />
+            <CardContent className="pt-2 text-sm text-muted-foreground"></CardContent>
 
-      <button
-        onClick={() => {
-          flip();
-        }}
-        aria-label="Info Anzeigen"
-        className="absolute top-2 right-2 bg-gray-400 rounded-full w-5 h-5 text-white flex items-center justify-center font-['Helvetica']"
-      >
-        i
-      </button>
+            <button
+              onClick={flipCard}
+              disabled={isAnimating}
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              aria-label="Zurück"
+            >
+              <X className="size-4" />
+            </button>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
+
 export default FossilFuels;

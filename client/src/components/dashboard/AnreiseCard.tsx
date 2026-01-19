@@ -231,7 +231,7 @@ export function AnreiseCard() {
           className="backface-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative">
+          <Card className="relative" data-card-id="travel">
             <CardHeader className="">
               <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
                 <h1 className="text-xl/4 font-bold text-black/60">Anreise</h1>
