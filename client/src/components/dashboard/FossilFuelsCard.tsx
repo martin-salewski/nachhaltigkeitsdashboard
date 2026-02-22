@@ -1,17 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Card, CardContent } from "@/components/ui/card";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+} from "@/components/ui/select";
 
-interface StatCardProps {
-  value: string;
-  label: string;
-  change?: string;
-  changeType?: "positive" | "negative";
-}
+function FossilFuels() {
+  const heading = "Fossile Brennstoffe";
+  const erdoel = "Erdöl";
+  const erdgas = "Erdgas";
 
-export function StatCard({ value, label, change, changeType }: StatCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -19,6 +25,7 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
 
+  // initial: front visible, back hidden
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
     frontRef.current.style.visibility = "visible";
@@ -38,7 +45,7 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
 
     const tl = gsap.timeline({
       onComplete: () => {
-        setIsFlipped((prev) => !prev);
+        setIsFlipped((p) => !p);
         setIsAnimating(false);
       },
     });
@@ -69,37 +76,55 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
       >
         {/* FRONT */}
         <div ref={frontRef} style={{ backfaceVisibility: "hidden" }}>
-          <Card
-            className="absolute inset-0 h-full w-full"
-            style={{ fontFamily: '"SimStd", sans-serif' }}
-          >
+          <Card className="relative h-full w-full">
             <CardContent>
-              <div>
-
-                <div className="w-full h-full flex items-start flex-col">
-                  <div className="flex flex-row gap-x-3">
-                  <p className="text-5xl font-bold text-black/80">{value}</p>
-                  {change && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded justify-center items-center flex ${
-                        changeType === "positive"
-                          ? "bg-green-100 text-green-700 h-5"
-                          : "bg-red-100 text-red-700 h-5"
-                      }`}
-                    >
-                      {changeType === "positive" ? "↗" : "↘"}
-                      {change}
-                    </span>
-                  )}
-                 
+              <div className="w-full flex flex-col">
+                <h1 className="font-['SimStd'] font-bold text-black/60 text-md leading-none">
+                  {heading}
+                </h1>
+                <Separator className="bg-black/10 h-2 w-full mt-1 mb-3" />
+                <div className="flex flex-row justify-between">
                 
+                  <div className="flex flex-col">
+                    <p className="text-sm text-black/50">{erdoel}</p>
+                    <p className="text-sm font-bold text-black/80">20 t</p>
                   </div>
-                  <Separator className="bg-black/10 h-2 w-full" />
-                  <p className="text-sm text-black/60 mt-1">{label}</p>
-                </div>
-              </div>
-            </CardContent>
 
+                  <div className="flex flex-col">
+                    <p className="text-sm text-black/50">{erdgas}</p>
+                    <p className="text-sm font-bold text-black/80">10 t</p>
+                  </div>
+                
+
+                <Select>
+                    <SelectTrigger size="sm" className="w-fit px-2 py-1 text-xs">
+                      <SelectValue placeholder="Jahr" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Jahr</SelectLabel>
+                        <SelectItem className="text-xs" value="2026">
+                          2026
+                        </SelectItem>
+                        <SelectItem className="text-xs" value="2027">
+                          2027
+                        </SelectItem>
+                        <SelectItem className="text-xs" value="2028">
+                          2028
+                        </SelectItem>
+                        <SelectItem className="text-xs" value="2029">
+                          2029
+                        </SelectItem>
+                        <SelectItem className="text-xs" value="2030">
+                          2030
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+              </div>
+              </div>
+              
+            </CardContent>
             <button
               onClick={flipCard}
               disabled={isAnimating}
@@ -121,12 +146,14 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
             visibility: "hidden",
           }}
         >
-          <Card
-            className="relative h-full w-full"
-            style={{ fontFamily: '"SimStd", sans-serif' }}
-          >
-            <CardContent className="h-full w-full">
-            </CardContent>
+          <Card className="relative h-full gap-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-medium text-foreground/90">
+                Über diese Karte
+              </CardTitle>
+            </CardHeader>
+            <Separator className="mb-2 bg-black/10" />
+            <CardContent className="pt-2 text-sm text-muted-foreground"></CardContent>
 
             <button
               onClick={flipCard}
@@ -142,3 +169,5 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
     </div>
   );
 }
+
+export default FossilFuels;

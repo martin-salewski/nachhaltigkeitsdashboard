@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { DonutChart } from "../ui/donutchart";
+import { DonutChart } from "../ui/donutchart_electricity";
 import {
   Select,
   SelectContent,
@@ -80,25 +80,25 @@ function ElectricityMix() {
   }, [isFlipped, isAnimating]);
 
   return (
-    <div className="perspective-[1000px] h-full">
+    <div className="perspective-[1000px] h-full w-full">
       <div
         ref={cardRef}
-        className="relative h-full"
+        className="relative h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
         <div
           ref={frontRef}
           style={{ backfaceVisibility: "hidden" }}
-          className="backface-hidden"
+          className="backface-hidden h-full w-full"
         >
           <Card className="relative h-full w-full" data-card-id="strom">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
+            <CardHeader>
+              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col">
                 <h1 className="font-['SimStd'] opacity-60 text-[10] font-bold">
                   {heading}
                 </h1>
-                <Separator className="bg-black/10 h-2" />
+                <Separator className="bg-black/10 h-2 mb-2" />
                 <div className="flex w-full justify-end">
                   <Select>
                     <SelectTrigger className="w-fit">
@@ -119,7 +119,7 @@ function ElectricityMix() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="min-h-0">
               <DonutChart
                 labels={[
                   "Müll-KWK",
@@ -147,7 +147,7 @@ function ElectricityMix() {
         {/* BACK */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
@@ -155,13 +155,13 @@ function ElectricityMix() {
           }}
         >
           <Card className="relative h-full w-full" data-card-id="strom">
-            <CardHeader className="pb-2">
+            <CardHeader className="mb-2">
               <CardTitle className="text-base font-medium text-foreground/90">
                 Über diese Karte
               </CardTitle>
             </CardHeader>
             <Separator className="mb-2 bg-black/10" />
-            <CardContent className="pt-2 text-sm text-muted-foreground"></CardContent>
+            <CardContent className="mt-2 text-sm text-muted-foreground"></CardContent>
 
             <button
               onClick={flipCard}

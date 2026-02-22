@@ -14,7 +14,7 @@ export function BuildingRatingCard() {
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
 
-  const { isPending, error, data, isFetching, isLoading } = useQuery({
+  const { isPending, data, isFetching, isLoading } = useQuery({
     queryKey: ["score"],
     queryFn: async () => {
       const response = await fetch("/random-api?min=1&max=100");
@@ -83,16 +83,14 @@ export function BuildingRatingCard() {
     }
   }, [isFlipped, isAnimating]);
 
-  const score = Number(data?.[0] ?? 10);
-
   return (
     <div
-      className="perspective-[1000px]"
+      className="perspective-[1000px] h-full w-full"
       style={{ fontFamily: '"SimStd", sans-serif' }}
     >
       <div
         ref={cardRef}
-        className="relative h-full"
+        className="relative h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
@@ -101,10 +99,10 @@ export function BuildingRatingCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden"
         >
-          <Card className="relative h-full">
+          <Card className="relative h-full w-full pb-4">
             <CardHeader className="">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">
+              <CardTitle className="text-base text-foreground/90 flex flex-col mt-2">
+                <h1 className="text-md font-['SimStd'] font-bold text-[14px] text-black/60">
                   Gesamtbewertung des Gebäudes
                 </h1>
                 <Separator className="bg-black/10 h-2" />
@@ -112,12 +110,12 @@ export function BuildingRatingCard() {
             </CardHeader>
 
             <CardContent>
-              <p className="text-xs text-black/50 mb-4">
+              <p className="text-xs text-black/50 mb-3">
                 CO₂-Emissionen des Gebäudes pro Person im Monatsdurchschnitt
               </p>
 
               {isPending || isLoading ? (
-                <div className="flex items-center justify-center h-[180px]">
+                <div className="flex items-center justify-center h-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
                   </div>
@@ -126,7 +124,10 @@ export function BuildingRatingCard() {
                 <div className="flex items-center justify-center">
                   <div className="relative w-full h-full">
                     <div className="flex flex-row justify-center">
-                      <ChartRadialText score={Number(data?.[0] ?? 10)} />
+                      <ChartRadialText
+                        score={Number(data?.[0] ?? 10)}
+                        size="md"
+                      />
                     </div>
                   </div>
                 </div>
@@ -153,7 +154,7 @@ export function BuildingRatingCard() {
         {/* BACK */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",

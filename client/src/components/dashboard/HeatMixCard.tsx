@@ -1,8 +1,6 @@
-import { Timeline } from "../ui/timeline";
-import type { TimelineItem } from "../ui/timeline";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DonutChart } from "../ui/donutchart_heat";
 import {
   Select,
   SelectContent,
@@ -12,28 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
 
-export function GoalsCard() {
-  const items: TimelineItem[] = [
-    { title: "Reduktion der CO₂-Emissionen um 50 % bis 2028" },
-    {
-      title:
-        "Reduktion des Restmüllaufkommens pro Studierendem um 30 %",
-    },
-    { title: "10 neue Forschungsprojekte mit Nachhaltigkeitsbezug" },
-    { title: "jährlich mindestens 3 Nachhaltigkeitsaktionen" },
-  ];
-
-  const heading = "Nachhaltigkeitsziele";
-
+function HeatMix() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const cardRef = useRef<HTMLDivElement | null>(null);
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
+
+  const heading = "Heatmix";
 
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
@@ -52,7 +41,7 @@ export function GoalsCard() {
 
     setIsAnimating(true);
 
-    const tl = gsap.timeline({
+    const timeline = gsap.timeline({
       onComplete: () => {
         setIsFlipped((prev) => !prev);
         setIsAnimating(false);
@@ -60,11 +49,12 @@ export function GoalsCard() {
     });
 
     if (!isFlipped) {
-      tl.to(cardRef.current, {
-        rotateY: 90,
-        duration: 0.3,
-        ease: "power2.in",
-      })
+      timeline
+        .to(cardRef.current, {
+          rotateY: 90,
+          duration: 0.3,
+          ease: "power2.in",
+        })
         .set(frontRef.current, { visibility: "hidden" })
         .set(backRef.current, { visibility: "visible" })
         .to(cardRef.current, {
@@ -73,11 +63,12 @@ export function GoalsCard() {
           ease: "power2.out",
         });
     } else {
-      tl.to(cardRef.current, {
-        rotateY: 90,
-        duration: 0.3,
-        ease: "power2.in",
-      })
+      timeline
+        .to(cardRef.current, {
+          rotateY: 90,
+          duration: 0.3,
+          ease: "power2.in",
+        })
         .set(backRef.current, { visibility: "hidden" })
         .set(frontRef.current, { visibility: "visible" })
         .to(cardRef.current, {
@@ -89,10 +80,7 @@ export function GoalsCard() {
   }, [isFlipped, isAnimating]);
 
   return (
-    <div
-      className="perspective-[1000px] w-full h-full"
-      style={{ fontFamily: '"SimStd", sans-serif' }}
-    >
+    <div className="perspective-[1000px] h-full w-full">
       <div
         ref={cardRef}
         className="relative h-full w-full"
@@ -104,14 +92,16 @@ export function GoalsCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden h-full w-full"
         >
-          <Card className="relative w-full h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">{heading}</h1>
-                <Separator className="bg-black/10 h-2" />
+          <Card className="relative h-full w-full" data-card-id="strom">
+            <CardHeader>
+              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col">
+                <h1 className="font-['SimStd'] opacity-60 text-[10] font-bold">
+                  {heading}
+                </h1>
+                <Separator className="bg-black/10 h-2 mb-2" />
                 <div className="flex w-full justify-end">
                   <Select>
-                    <SelectTrigger className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60">
+                    <SelectTrigger className="w-fit">
                       <SelectValue placeholder="Jahr" />
                     </SelectTrigger>
                     <SelectContent>
@@ -129,8 +119,18 @@ export function GoalsCard() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="pt-2">
-              <Timeline items={items} />
+            <CardContent className="min-h-0">
+              <DonutChart
+                labels={[
+                  "Müll-KWK",
+                  "Klärschlamm",
+                  "Solar",
+                  "Wärmepumpe",
+                  "Gask-KWK",
+                  "Biomasse",
+                ]}
+                data={[55, 25, 25, 75, 80, 17]}
+              />
             </CardContent>
 
             <button
@@ -154,31 +154,20 @@ export function GoalsCard() {
             visibility: "hidden",
           }}
         >
-          <Card className="relative h-full">
-            <CardHeader className="pb-2">
+          <Card className="relative h-full w-full" data-card-id="strom">
+            <CardHeader className="mb-2">
               <CardTitle className="text-base font-medium text-foreground/90">
                 Über diese Karte
               </CardTitle>
             </CardHeader>
-
             <Separator className="mb-2 bg-black/10" />
-
-            <CardContent className="pt-2 text-sm text-muted-foreground space-y-3">
-              <p>
-                Diese Karte zeigt die Nachhaltigkeitsziele der Hochschule und
-                dient als Orientierung für die kommenden Jahre.
-              </p>
-              <ul className="list-disc pl-4 space-y-1 text-xs">
-                <li>Ziele sind zeitlich definiert (z.B. bis 2027/2028).</li>
-                <li>Sie können als Grundlage für Maßnahmen dienen.</li>
-              </ul>
-            </CardContent>
+            <CardContent className="mt-2 text-sm text-muted-foreground"></CardContent>
 
             <button
               onClick={flipCard}
               disabled={isAnimating}
               className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
-              aria-label="Zurück zur Ansicht"
+              aria-label="Zurück"
             >
               <X className="size-4" />
             </button>
@@ -188,3 +177,5 @@ export function GoalsCard() {
     </div>
   );
 }
+
+export default HeatMix;

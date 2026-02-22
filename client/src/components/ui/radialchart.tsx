@@ -1,6 +1,5 @@
 "use client";
 import { ResponsiveContainer } from "recharts";
-import { TrendingUp } from "lucide-react";
 import {
   Label,
   PolarGrid,
@@ -12,26 +11,67 @@ import {
 import {} from "@/components/ui/card";
 export const description = "A radial chart with text";
 
-export const ChartRadialText = ({ score }) => {
-  console.log("Component Props", score);
+type ChartRadialTextProps = {
+  score: number;
+
+  size?: "sm" | "md" | "default";
+};
+
+export const ChartRadialText = ({ score, size = "default" }: ChartRadialTextProps) => {
   const data = [{ score, fill: "var(--color-chart-1)" }];
+
+  const dimensions =
+    size === "sm"
+      ? {
+          containerClassName: "w-[200px] h-[160px]",
+          innerRadius: 62,
+          outerRadius: 88,
+          polarRadius: [68, 56] as [number, number],
+          valueTextClassName: "fill-foreground text-5xl font-bold font-['SimStd']",
+          subTextClassName: "fill-muted-foreground font-['SimStd'] text-xs",
+          valueTranslateY: -8,
+          subTextOffsetY: 34,
+        }
+      : size === "md"
+        ? {
+            containerClassName: "w-[220px] h-[175px]",
+            innerRadius: 70,
+            outerRadius: 98,
+            polarRadius: [76, 64] as [number, number],
+            valueTextClassName:
+              "fill-foreground text-5xl font-bold font-['SimStd']",
+            subTextClassName: "fill-muted-foreground font-['SimStd'] text-xs",
+            valueTranslateY: -9,
+            subTextOffsetY: 40,
+          }
+      : {
+          containerClassName: "w-[250px] h-[200px]",
+          innerRadius: 80,
+          outerRadius: 110,
+          polarRadius: [86, 74] as [number, number],
+          valueTextClassName: "fill-foreground text-6xl font-bold font-['SimStd']",
+          subTextClassName: "fill-muted-foreground font-['SimStd'] text-8",
+          valueTranslateY: -10,
+          subTextOffsetY: 45,
+        };
+
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="w-[250px] h-[200px]">
+      <div className={dimensions.containerClassName}>
         <ResponsiveContainer width="100%" height="100%">
           <RadialBarChart
             data={data}
             startAngle={90}
             endAngle={90 - score * 3.6}
-            innerRadius={80}
-            outerRadius={110}
+            innerRadius={dimensions.innerRadius}
+            outerRadius={dimensions.outerRadius}
           >
             <PolarGrid
               gridType="circle"
               radialLines={false}
               stroke="none"
               className="first:fill-muted last:fill-white"
-              polarRadius={[86, 74]}
+              polarRadius={dimensions.polarRadius}
             />
             <div className="rounded-full color-white shadow-lg"></div>
             <RadialBar dataKey="score" background cornerRadius={10} />
@@ -41,35 +81,24 @@ export const ChartRadialText = ({ score }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                     return (
                       <g>
-                        {/*  <rect
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 45}
-                          width={80}
-                          height={40}
-                          ry={100}
-                          rx={100}
-                          stroke="#909090ff"
-                          strokeWidth={2}
-                          fill="none"
-                        /> */}
                         <text
                           x={viewBox.cx}
                           y={viewBox.cy}
                           textAnchor="middle"
                           dominantBaseline="middle"
-                          transform={`translate(0, -10)`}
+                          transform={`translate(0, ${dimensions.valueTranslateY})`}
                         >
                           <tspan
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-6xl font-bold font-['SimStd']"
+                            className={dimensions.valueTextClassName}
                           >
                             {score.toLocaleString()}
                           </tspan>
                           <tspan
                             x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 45}
-                            className="fill-muted-foreground font-['SimStd'] text-8"
+                            y={(viewBox.cy || 0) + dimensions.subTextOffsetY}
+                            className={dimensions.subTextClassName}
                           >
                             {score}/100
                           </tspan>

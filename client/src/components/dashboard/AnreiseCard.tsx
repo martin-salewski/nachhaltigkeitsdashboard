@@ -217,21 +217,21 @@ export function AnreiseCard() {
 
   return (
     <div
-      className="perspective-[1000px]"
+      className="perspective-[1000px] h-full w-full"
       style={{ fontFamily: '"SimStd", sans-serif' }}
     >
       <div
         ref={cardRef}
-        className="relative transform-style-3d"
+        className="relative transform-style-3d h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
         <div
           ref={frontRef}
-          className="backface-hidden"
+          className="backface-hidden h-full w-full"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative" data-card-id="travel">
+          <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
               <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
                 <h1 className="text-xl/4 font-bold text-black/60">Anreise</h1>
@@ -277,21 +277,21 @@ export function AnreiseCard() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="">
+            <CardContent className="min-h-0 min-w-0">
               {isLoading ? (
-                <div className="flex items-center justify-center h-[180px]">
+                <div className="flex items-center justify-center h-full w-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
                   </div>
                 </div>
               ) : chartData.length === 0 ? (
-                <div className="flex items-center justify-center h-[180px] text-muted-foreground text-sm">
+                <div className="flex items-center justify-center h-full w-full text-muted-foreground text-sm">
                   Keine Daten verfügbar
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-[180px] w-full"
+                  className="h-full w-full mt-2"
                 >
                   <BarChart
                     accessibilityLayer
@@ -371,14 +371,14 @@ export function AnreiseCard() {
         {/* Back of card */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
             visibility: "hidden",
           }}
         >
-          <Card className="relative h-full">
+          <Card className="relative h-full w-full">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium text-foreground/90">
                 Über diese Karte

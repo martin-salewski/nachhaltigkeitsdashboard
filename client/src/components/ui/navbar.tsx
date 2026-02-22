@@ -3,7 +3,7 @@ import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
 function Navbar() {
   return (
     <nav className="bg-neutral-primary fixed w-full z-20 top-0 start-0 border-b border-default bg-white">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <a
           href="https://www.hs-mainz.de/"
           className="flex items-center space-x-3 rtl:space-x-reverse"
@@ -33,8 +33,8 @@ function Navbar() {
           >
             <path
               stroke="currentColor"
-              stroke-linecap="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeWidth="2"
               d="M5 7h14M5 12h14M5 17h14"
             />
           </svg>

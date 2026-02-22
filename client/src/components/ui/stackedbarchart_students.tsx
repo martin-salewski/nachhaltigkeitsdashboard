@@ -42,9 +42,7 @@ const chartConfig = {
 
 export function ChartBarStacked() {
   return (
-    <Card className="border-0 shadow-none">
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-50 w-120">
+        <ChartContainer config={chartConfig} className="w-full h-full min-h-0">
           <BarChart accessibilityLayer data={chartData} maxBarSize={45}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -53,29 +51,28 @@ export function ChartBarStacked() {
               tickMargin={10}
               axisLine={false}
             />
+            
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
               dataKey="weiblich"
               stackId="a"
-              fill="var(--hscolor-1)"
-              radius={[0, 0, 4, 4]}
+              fill="#2B76BB"
+              radius={[0, 0, 0, 0]}
             />
             <Bar
               dataKey="männlich"
               stackId="a"
-              fill="var(--chart-2)"
-              radius={[4, 4, 0, 0]}
+              fill="#1F8FCE"
+              radius={[0, 0, 0, 0]}
             />
             <Bar
               dataKey="divers"
               stackId="a"
-              fill="var(--chart-3)"
+              fill="#4DBAF7"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
         </ChartContainer>
-      </CardContent>
-    </Card>
   );
 }

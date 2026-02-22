@@ -1,5 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -19,69 +26,77 @@ import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
 
-interface EmissionsData {
+interface CommuteData {
   id: number;
   year: number;
   month: number;
-  day: number;
-  category: string;
-  valueCo2Kg: number;
+  mode: string;
+  percentage: number;
+  personCount: number | null;
 }
 
 interface Period {
   year: number;
-  month: number;
+  semester: number;
   label: string;
 }
 
-const MONTH_NAMES = [
-  "jan",
-  "feb",
-  "mär",
-  "apr",
-  "mai",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "okt",
-  "nov",
-  "dez",
-];
+// Color mapping for transport modes
+const MODE_COLORS: Record<string, string> = {
+  "zu Fuß": "#7DB8FF",
+  Fahrrad: "#4DBAF7",
+  Auto: "#2B76BB",
+  ÖPNV: "#1D3A6A",
+};
 
-// Chart configuration
+// Chart configuration for transport modes
 const chartConfig = {
-  valueCo2Kg: {
-    label: "CO₂ (kg)",
+  percentage: {
+    label: "Anteil",
+  },
+  zuFuss: {
+    label: "zu Fuß",
+    color: "#7DB8FF",
+  },
+  Fahrrad: {
+    label: "Fahrrad",
+    color: "#4DBAF7",
+  },
+  Auto: {
+    label: "Auto",
     color: "#2B76BB",
+  },
+  OEPNV: {
+    label: "ÖPNV",
+    color: "#1D3A6A",
   },
 } satisfies ChartConfig;
 
-async function fetchEmissions(
+async function fetchCommuteStats(
   year?: number,
-  month?: number,
+  semester?: number,
   category?: string
-): Promise<EmissionsData[]> {
+): Promise<CommuteData[]> {
   const params = new URLSearchParams();
   if (year) params.set("year", year.toString());
-  if (month) params.set("month", month.toString());
+  if (semester) params.set("semester", semester.toString());
   if (category) params.set("category", category);
 
-  const url = `http://localhost:3000/api/emissions${
+  const url = `http://localhost:3000/api/commute-stats${
     params.toString() ? `?${params}` : ""
   }`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch emissions");
+  if (!res.ok) throw new Error("Failed to fetch commute stats");
   return res.json();
 }
 
 async function fetchPeriods(): Promise<Period[]> {
-  const res = await fetch("http://localhost:3000/api/emissions/periods");
+  const res = await fetch("http://localhost:3000/api/commute-stats/periods");
   if (!res.ok) throw new Error("Failed to fetch periods");
   return res.json();
 }
 
-export function EmissionsCard() {
+export function TrashCard() {
   const [selectedCategory, setSelectedCategory] = useState<string>("gesamt");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
@@ -92,50 +107,62 @@ export function EmissionsCard() {
   const backRef = useRef<HTMLDivElement>(null);
 
   const { data: periods = [] } = useQuery({
-    queryKey: ["emissions-periods"],
+    queryKey: ["commute-periods"],
     queryFn: fetchPeriods,
   });
 
   // Set default period to the latest one when periods load
   useEffect(() => {
     if (periods.length > 0 && !selectedPeriod) {
-      setSelectedPeriod(`${periods[0].year}-${periods[0].month}`);
+      setSelectedPeriod(`${periods[0].year}-${periods[0].semester}`);
     }
   }, [periods, selectedPeriod]);
 
-  // Parse selected period into year and month
-  const { selectedYear, selectedMonth } = useMemo(() => {
+  // Parse selected period into year and semester
+  const { selectedYear, selectedSemester } = useMemo(() => {
     if (!selectedPeriod)
-      return { selectedYear: undefined, selectedMonth: undefined };
-    const [year, month] = selectedPeriod.split("-").map(Number);
-    return { selectedYear: year, selectedMonth: month };
+      return { selectedYear: undefined, selectedSemester: undefined };
+    const [year, semester] = selectedPeriod.split("-").map(Number);
+    return { selectedYear: year, selectedSemester: semester };
   }, [selectedPeriod]);
 
   // Get the label for the selected period
   const selectedPeriodLabel = useMemo(() => {
-    if (!selectedMonth) return "";
-    return MONTH_NAMES[selectedMonth - 1];
-  }, [selectedMonth]);
+    const period = periods.find(
+      (p) => p.year === selectedYear && p.semester === selectedSemester
+    );
+    return period?.label || "";
+  }, [periods, selectedYear, selectedSemester]);
 
-  const { data: emissionsData = [], isLoading } = useQuery({
-    queryKey: ["emissions", selectedYear, selectedMonth, selectedCategory],
+  const { data: commuteData = [], isLoading } = useQuery({
+    queryKey: [
+      "commute-stats",
+      selectedYear,
+      selectedSemester,
+      selectedCategory,
+    ],
     queryFn: () =>
-      fetchEmissions(selectedYear, selectedMonth, selectedCategory),
-    enabled: !!selectedYear && !!selectedMonth,
+      fetchCommuteStats(selectedYear, selectedSemester, selectedCategory),
+    enabled: !!selectedYear && !!selectedSemester,
   });
 
-  // Transform data for recharts
+  // Transform data for recharts - sort by personCount descending
   const chartData = useMemo(() => {
-    return emissionsData.map((item) => ({
-      day: item.day,
-      value: item.valueCo2Kg,
-    }));
-  }, [emissionsData]);
+    return [...commuteData]
+      .sort((a, b) => (b.personCount || 0) - (a.personCount || 0))
+      .map((item) => ({
+        mode: item.mode,
+        count: item.personCount || 0,
+        percentage: `${Math.round(item.percentage)}%`,
+        fill: MODE_COLORS[item.mode] || "#3a6b8c",
+      }));
+  }, [commuteData]);
 
-  // Calculate max value for chart domain (round to nearest 20 for nice 5-tick divisions)
-  const maxValue = useMemo(() => {
-    const max = Math.max(...chartData.map((d) => d.value), 0);
-    return Math.ceil(max / 20) * 20;
+  // Calculate max value for chart domain
+  const maxCount = useMemo(() => {
+    const max = Math.max(...chartData.map((d) => d.count), 0);
+    // Round up to nearest 1000 for evenly spaced ticks
+    return Math.ceil(max / 1000) * 1000;
   }, [chartData]);
 
   const flipCard = useCallback(() => {
@@ -156,6 +183,7 @@ export function EmissionsCard() {
     });
 
     if (!isFlipped) {
+      // Flip to back
       timeline
         .to(cardRef.current, {
           rotateY: 90,
@@ -188,12 +216,12 @@ export function EmissionsCard() {
 
   return (
     <div
-      className="perspective-[1000px] h-full w-full"
+      className="perspective-[1000px] flex h-full w-full"
       style={{ fontFamily: '"SimStd", sans-serif' }}
     >
       <div
         ref={cardRef}
-        className="relative h-full w-full transform-style-3d"
+        className="relative transform-style- h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
@@ -202,12 +230,10 @@ export function EmissionsCard() {
           className="backface-hidden h-full w-full"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative h-full w-full" data-card-id="co2">
+          <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
-              <CardTitle className="text-[14px] font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">
-                  Emissionen
-                </h1>
+              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
+                <h1 className="text-xl/4 font-bold text-black/60">Müll</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex gap-2 w-full justify-end">
                   <Select
@@ -222,9 +248,8 @@ export function EmissionsCard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="gesamt">gesamt</SelectItem>
-                      <SelectItem value="strom">Strom</SelectItem>
-                      <SelectItem value="heizung">Heizung</SelectItem>
-                      <SelectItem value="mobilitaet">Mobilität</SelectItem>
+                      <SelectItem value="studierende">Studierende</SelectItem>
+                      <SelectItem value="mitarbeiter">Mitarbeiter</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select
@@ -235,13 +260,13 @@ export function EmissionsCard() {
                       size="sm"
                       className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
                     >
-                      <SelectValue placeholder="Monat" />
+                      <SelectValue placeholder="KW" />
                     </SelectTrigger>
                     <SelectContent>
                       {periods.map((period) => (
                         <SelectItem
-                          key={`${period.year}-${period.month}`}
-                          value={`${period.year}-${period.month}`}
+                          key={`${period.year}-${period.semester}`}
+                          value={`${period.year}-${period.semester}`}
                         >
                           {period.label}
                         </SelectItem>
@@ -251,15 +276,15 @@ export function EmissionsCard() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="min-h-0">
+            <CardContent className="">
               {isLoading ? (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex items-center justify-center h-full w-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
                   </div>
                 </div>
               ) : chartData.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                <div className="flex items-center justify-center h-full w-full text-muted-foreground text-sm">
                   Keine Daten verfügbar
                 </div>
               ) : (
@@ -267,42 +292,40 @@ export function EmissionsCard() {
                   config={chartConfig}
                   className="h-full w-full"
                 >
-                  <LineChart
+                  <BarChart
                     accessibilityLayer
                     data={chartData}
-                    margin={{ left: 0, right: 12, top: 12, bottom: 0 }}
+                    layout="vertical"
+                    margin={{ left: 0, right: 50 }}
                   >
                     <CartesianGrid
-                      vertical={true}
-                      horizontal={true}
+                      horizontal={false}
+                      strokeDasharray="4 4"
                       stroke="#e5e7eb"
                     />
                     <YAxis
-                      dataKey="value"
-                      type="number"
+                      dataKey="mode"
+                      type="category"
                       tickLine={false}
+                      tickMargin={10}
                       axisLine={false}
-                      tickMargin={8}
-                      width={35}
-                      tick={{ fontSize: 10 }}
-                      domain={[0, maxValue]}
-                      ticks={[
-                        0,
-                        maxValue / 4,
-                        maxValue / 2,
-                        (maxValue * 3) / 4,
-                        maxValue,
-                      ]}
+                      width={60}
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) =>
+                        chartConfig[value as keyof typeof chartConfig]?.label ??
+                        value
+                      }
                     />
                     <XAxis
-                      dataKey="day"
+                      dataKey="count"
                       type="number"
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
                       tick={{ fontSize: 10 }}
-                      domain={[1, 31]}
-                      ticks={[1, 8, 15, 22, 29]}
+                      tickFormatter={(value) => value.toLocaleString("de-DE")}
+                      domain={[0, maxCount]}
+                      tickCount={5}
                     />
                     <ChartTooltip
                       cursor={false}
@@ -310,20 +333,26 @@ export function EmissionsCard() {
                         <ChartTooltipContent
                           hideLabel
                           formatter={(value) => [
-                            `${Number(value).toLocaleString("de-DE")} kg CO₂`,
+                            `${Number(value).toLocaleString("de-DE")} Personen`,
                             "",
                           ]}
                         />
                       }
                     />
-                    <Line
-                      dataKey="value"
-                      type="linear"
-                      stroke="#2B76BB"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
+                    <Bar
+                      dataKey="count"
+                      layout="vertical"
+                      radius={[0, 4, 4, 0]}
+                      barSize={28}
+                    >
+                      <LabelList
+                        dataKey="percentage"
+                        position="right"
+                        offset={12}
+                        className="fill-black/60 text-[11px]"
+                      />
+                    </Bar>
+                  </BarChart>
                 </ChartContainer>
               )}
             </CardContent>
@@ -356,35 +385,8 @@ export function EmissionsCard() {
             <Separator className="mb-2" />
             <CardContent className="pt-2 overflow-hidden">
               <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  <strong className="text-foreground">Emissionen</strong> zeigt
-                  die täglichen CO₂-Emissionen der Hochschule in Kilogramm.
-                </p>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-foreground">Kategorien:</h4>
-                  <ul className="space-y-1 text-xs">
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#2B76BB]" />
-                      <span>Gesamt – Alle Emissionsquellen</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#4DBAF7]" />
-                      <span>Strom – Stromverbrauch</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#1D3A6A]" />
-                      <span>Heizung – Heizenergie</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#7DB8FF]" />
-                      <span>Mobilität – Dienstreisen & Pendeln</span>
-                    </li>
-                  </ul>
+               <div className="space-y-2">
                 </div>
-                <p className="text-xs">
-                  Datenquelle: Energiemonitoring {selectedPeriodLabel}{" "}
-                  {selectedYear}
-                </p>
               </div>
             </CardContent>
             {/* Close icon */}

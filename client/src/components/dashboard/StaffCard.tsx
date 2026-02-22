@@ -1,13 +1,39 @@
-import gsap from "gsap";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import gsap from "gsap";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChartBarStacked } from "../ui/stackedbarchart_personnel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
 
-function FossilFuels() {
-  const heading = "Fossile Brennstoffe";
-  const erdoel = "Erdöl";
-  const erdgas = "Erdgas";
+interface StudentData {
+    month: number;
+    qualification: string,
+    gender: string,
+  }
+
+/* /* async function FetchStudentDemographics(
+  year?: number,
+  gender?: string,
+  qualification?: string,
+  count?: number
+): Promise<[]> {
+ 
+
+} */
+
+
+function StaffCard() {
+  const heading = "Personal";
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -16,7 +42,6 @@ function FossilFuels() {
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
 
-  // initial: front visible, back hidden
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
     frontRef.current.style.visibility = "visible";
@@ -36,7 +61,7 @@ function FossilFuels() {
 
     const tl = gsap.timeline({
       onComplete: () => {
-        setIsFlipped((p) => !p);
+        setIsFlipped((prev) => !prev);
         setIsAnimating(false);
       },
     });
@@ -58,47 +83,58 @@ function FossilFuels() {
     }
   }, [isFlipped, isAnimating]);
 
+
   return (
-    <div className="perspective-[1000px] h-full">
+    <div className="relative h-full w-full" style={{ perspective: 1000 }}>
       <div
         ref={cardRef}
-        className="relative h-full"
+        className="relative h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
-        <div ref={frontRef} style={{ backfaceVisibility: "hidden" }}>
-          <Card className="relative h-full w-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="font-['SimStd'] font-bold text-black/60 text-[10px]">
+        <div ref={frontRef} className="h-full w-full" style={{ backfaceVisibility: "hidden" }}>
+          <Card className="relative bg-white w-full h-full flex flex-col">
+            <CardHeader>
+              <CardTitle>
+                <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
                   {heading}
                 </h1>
-                <Separator className="bg-black/10 h-2" />
               </CardTitle>
             </CardHeader>
 
-            <CardContent>
-              <div className="flex justify-between mt-2">
-                <div className="flex flex-col">
-                  <p className="text-[10px] text-black/50">{erdoel}</p>
-                  <p className="text-sm font-bold text-black/80">20 t</p>
-                </div>
+            <CardContent className="flex-1 min-h-0 flex flex-col">
+              <Separator className="bg-black/10 h-2" />
 
-                <div className="flex flex-col">
-                  <p className="text-[10px] text-black/50">{erdgas}</p>
-                  <p className="text-sm font-bold text-black/80">10 t</p>
-                </div>
+              <div className="flex justify-end items-end mt-2">
+                <Select>
+                  <SelectTrigger className="w-fit">
+                    <SelectValue placeholder="Jahr" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Jahr</SelectLabel>
+                      <SelectItem value="2026">2026</SelectItem>
+                      <SelectItem value="2027">2027</SelectItem>
+                      <SelectItem value="2028">2028</SelectItem>
+                      <SelectItem value="2029">2029</SelectItem>
+                      <SelectItem value="2030">2030</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="flex-1 min-h-0 w-full mt-2">
+        <ChartBarStacked />
+      </div>
             </CardContent>
 
-            {/* Info button like Emissions */}
             <button
               onClick={flipCard}
               disabled={isAnimating}
               className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
               aria-label="Mehr Informationen"
             >
-              <Info className="size-4" />
+               <Info className="size-4" />
             </button>
           </Card>
         </div>
@@ -106,21 +142,27 @@ function FossilFuels() {
         {/* BACK */}
         <div
           ref={backRef}
-          className="absolute inset-0"
+          className="absolute inset-0 h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            visibility: "hidden",
           }}
         >
-          <Card className="relative h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90">
-                Über diese Karte
+          <Card className="relative bg-white w-full h-full">
+            <CardHeader>
+              <CardTitle>
+                <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
+                  Über diese Karte
+                </h1>
               </CardTitle>
             </CardHeader>
-            <Separator className="mb-2 bg-black/10" />
-            <CardContent className="pt-2 text-sm text-muted-foreground"></CardContent>
+
+            <CardContent>
+              <Separator className="bg-black/10 h-2" />
+              <div className="mt-3 text-sm text-muted-foreground space-y-2">
+                <p>blabla</p>
+              </div>
+            </CardContent>
 
             <button
               onClick={flipCard}
@@ -128,7 +170,7 @@ function FossilFuels() {
               className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
               aria-label="Zurück"
             >
-              <X className="size-4" />
+              <X />
             </button>
           </Card>
         </div>
@@ -137,4 +179,4 @@ function FossilFuels() {
   );
 }
 
-export default FossilFuels;
+export default StaffCard;

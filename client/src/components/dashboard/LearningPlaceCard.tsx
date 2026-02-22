@@ -15,18 +15,11 @@ import {
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 
-export function GoalsCard() {
-  const items: TimelineItem[] = [
-    { title: "Reduktion der CO₂-Emissionen um 50 % bis 2028" },
-    {
-      title:
-        "Reduktion des Restmüllaufkommens pro Studierendem um 30 %",
-    },
-    { title: "10 neue Forschungsprojekte mit Nachhaltigkeitsbezug" },
-    { title: "jährlich mindestens 3 Nachhaltigkeitsaktionen" },
-  ];
+export function LearningPlaceCard() {
+ 
 
-  const heading = "Nachhaltigkeitsziele";
+  const heading = "Lernort";
+  const progress = 45;
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -125,12 +118,67 @@ export function GoalsCard() {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                  </div>
+                <div className="">
+                <div className="flex flex-row">
+                <div className="flex items-start w-full">
+                  <p className="text-sm font-['Helvetica']">Anzahl der Lehrberatungen</p>
+                  </div>
+                  
+                
+                  <div className="flex justify-end items-center w-full">
+                  <p className="text-sm font-bold font-['Helvetica']">120</p>
+                  </div>
                 </div>
+                <Separator className="gap-2 mb-4"/>
+                <div className="flex flex-row">
+                <div className="flex items-start w-full">
+                  <p className="text-sm font-['Helvetica']">Anzahl der Lernplätze im Selbststudium</p>
+                  </div>
+                  <div className="flex justify-end items-center w-full">
+                  <p className="text-sm font-bold font-['Helvetica']">40</p>
+                  </div>
+                </div>
+                <Separator className="gap-2 mb-4"/>
+                <div className="flex flex-row">
+                <div className="flex items-start w-full">
+                  <p className="text-sm font-['Helvetica']">Anzahl Forschungsprojekte</p>
+                  <div className="flex justify-end items-center w-full">
+                  <p className="text-sm font-bold font-['Helvetica']">17</p>
+                  </div>
+                </div>
+                </div>
+                <Separator className="gap-2 mb-4"/>
+                <div className="flex flex-row">
+                <div className="flex justify-start w-full">
+                  <p className="text-sm font-['Helvetica'] ">Anzahl WerkstudentInnen</p>
+                  </div>
+                  <div className="flex justify-end items-center w-full">
+                  <p className="text-sm font-bold font-['Helvetica']">17</p>
+                  </div>
+                </div>
+                </div>
+                <Separator className="gap-2 mb-4"/>
+                <div className="flex justify-start">
+                  <p className="text-sm font-['Helvetica'] mb-2">Studierendenzufriedenheit</p>
+                </div>
+                
+
+<div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+  <div
+    className="h-full text-white bg-[var(--color-chart-1)] font-medium flex items-center justify-center font-['Helvetica'] text-xs rounded-full"
+    style={{ width: `${progress}%` }}
+  >
+    {progress}%
+  </div>
+</div>
+
+
               </CardTitle>
             </CardHeader>
 
             <CardContent className="pt-2">
-              <Timeline items={items} />
+           
             </CardContent>
 
             <button
