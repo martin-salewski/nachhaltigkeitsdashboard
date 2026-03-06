@@ -9,6 +9,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 
+
+
 export const description = "A bar chart";
 
 type Meal = "Fleisch" | "Vegetarisch" | "Vegan";
@@ -40,9 +42,9 @@ const mealToColorVar: Record<Meal, string> = {
   Vegan: "var(--color-vegan)",
 };
 
-export function ChartBarDefault() {
+export function ChartBarMenu() {
   return (
-    <ChartContainer config={chartConfig} className="h-full pr-10">
+    <ChartContainer config={chartConfig} className="h-full w-full min-h-0">
       <BarChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis

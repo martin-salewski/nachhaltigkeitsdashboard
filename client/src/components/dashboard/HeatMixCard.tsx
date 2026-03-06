@@ -94,14 +94,14 @@ function HeatMix() {
         >
           <Card className="relative h-full w-full" data-card-id="strom">
             <CardHeader>
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col">
-                <h1 className="font-['SimStd'] opacity-60 text-[10] font-bold">
+              <CardTitle>
+                <h1 className="title">
                   {heading}
                 </h1>
                 <Separator className="bg-black/10 h-2 mb-2" />
                 <div className="flex w-full justify-end">
                   <Select>
-                    <SelectTrigger className="w-fit">
+                    <SelectTrigger className="selector">
                       <SelectValue placeholder="Jahr" />
                     </SelectTrigger>
                     <SelectContent>

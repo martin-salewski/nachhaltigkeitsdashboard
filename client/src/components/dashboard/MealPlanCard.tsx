@@ -104,13 +104,13 @@ function MealPlanCard() {
         >
           <Card className=" w-full h-full bg-white rounded-lg border border-gray-300">
             <CardHeader>
-              <CardTitle className="font-bold opacity-60 text-xl font-[SimStd']">
-                Speiseplan
+              <CardTitle>
+                <h1 className="title"> Speiseplan</h1>  
               </CardTitle>
               <Separator className=" w-full h-2 bg-black/10" />
               <div className="flex w-full justify-end">
                 <Select>
-                  <SelectTrigger className="w-fit">
+                  <SelectTrigger className="selector">
                     <SelectValue placeholder="Jahr" />
                   </SelectTrigger>
                   <SelectContent>

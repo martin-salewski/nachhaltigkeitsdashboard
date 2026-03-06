@@ -79,7 +79,7 @@ function FossilFuels() {
           <Card className="relative h-full w-full">
             <CardContent>
               <div className="w-full flex flex-col">
-                <h1 className="font-['SimStd'] font-bold text-black/60 text-md leading-none">
+                <h1 className="title">
                   {heading}
                 </h1>
                 <Separator className="bg-black/10 h-2 w-full mt-1 mb-3" />

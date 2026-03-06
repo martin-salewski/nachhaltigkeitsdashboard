@@ -1,8 +1,6 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
-import { Card, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartLegend,
@@ -11,42 +9,44 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import type { StudentData } from "../dashboard/StudentsCard";
+import { useMemo } from "react";
 
-export const description = "A stacked bar chart with a legend";
 
-const chartData = [
-  {
-    month: "Allgemeine Hochschulreife",
-    weiblich: 186,
-    männlich: 80,
-    divers: 10,
-  },
-  { month: "Fachhochschulreife", weiblich: 305, männlich: 200, divers: 10 },
-  { month: "Sonstige Qualifikation", weiblich: 237, männlich: 120, divers: 10 },
-];
+interface ChartProps {
+  data: StudentData[];
+}
 
-const chartConfig = {
-  weiblich: {
-    label: "weiblich",
-    color: "var(--chart-1)",
-  },
-  männlich: {
-    label: "männlich",
-    color: "var(--chart-2)",
-  },
-  divers: {
-    label: "divers",
-    color: "var(--chart-3)",
-  },
-} satisfies ChartConfig;
+export function ChartBarStacked({ data }: ChartProps) {
+  const genderKeys = useMemo(() => {
+    return [...new Set(data.map(entry => entry.gender))];
+  }, [data]);
 
-export function ChartBarStacked() {
+  const chartConfig = useMemo(() => {
+    return genderKeys.reduce((acc, gender, index) => {
+      acc[gender] = { label: gender, color: `var(--chart-${index + 1})` };
+      return acc;
+    }, {} as ChartConfig);
+  }, [genderKeys]);
+
+  const chartData = useMemo(() => {
+    return data.reduce((acc, entry) => {
+      const existing = acc.find(d => d.qualification === entry.qualification);
+      if (existing) {
+        existing[entry.gender] = (existing[entry.gender] ?? 0) + entry.count;
+      } else {
+        acc.push({ qualification: entry.qualification, [entry.gender]: entry.count });
+      }
+      return acc;
+    }, [] as Record<string, any>[]);
+  }, [data]);
+
   return (
         <ChartContainer config={chartConfig} className="w-full h-full min-h-0">
           <BarChart accessibilityLayer data={chartData} maxBarSize={45}>
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="qualification"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
@@ -54,24 +54,15 @@ export function ChartBarStacked() {
             
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <ChartLegend content={<ChartLegendContent />} />
-            <Bar
-              dataKey="weiblich"
-              stackId="a"
-              fill="#2B76BB"
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey="männlich"
-              stackId="a"
-              fill="#1F8FCE"
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey="divers"
-              stackId="a"
-              fill="#4DBAF7"
-              radius={[4, 4, 0, 0]}
-            />
+            {genderKeys.map((gender, index) => (
+          <Bar
+            key={gender}
+            dataKey={gender}
+            stackId="a"
+            fill={`var(--chart-${index + 1})`}
+            radius={index === genderKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+          />
+        ))}
           </BarChart>
         </ChartContainer>
   );

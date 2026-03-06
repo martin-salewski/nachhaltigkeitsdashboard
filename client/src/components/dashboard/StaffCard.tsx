@@ -15,24 +15,58 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
 
-interface StudentData {
+export interface StaffData {
     month: number;
-    qualification: string,
     gender: string,
+    count: number,
+    department: string,
   }
 
-/* /* async function FetchStudentDemographics(
+async function FetchStaffDemographics(
   year?: number,
   gender?: string,
-  qualification?: string,
-  count?: number
-): Promise<[]> {
+  count?: number,
+  department?: string,
+): Promise<StaffData[]> {
  
+  const params = new URLSearchParams();
+  if (year) params.set("year", year.toString());
+  if (gender) params.set("gender", gender.toString());
+  if (count) params.set("count", count.toString());
+  if (department) params.set("department", department.toString());
+  const url = `http://localhost:3000/api/staff_demographics${
+    params.toString() ? `?${params}` : ""
+  }`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch staff demographics");
+  return res.json();
+}
 
-} */
+async function FetchAvailableYears(): Promise<number[]> {
+  const res = await fetch("http://localhost:3000/api/staff_demographics/years");
+  if (!res.ok) throw new Error("Failed to fetch years");
+  return res.json();
+}
 
 
 function StaffCard() {
+  const [year, setYear] = useState<number | undefined>(undefined)
+  
+  const { data } = useQuery({
+    queryKey: ["staff Demographics", year],
+    queryFn: ()=> FetchStaffDemographics (year),
+  });
+
+  const { data: availableYears } = useQuery({
+    queryKey: ["staff-years"],
+    queryFn: FetchAvailableYears,
+  });
+  useEffect(() => {
+    if (availableYears && availableYears.length > 0 && year === undefined) {
+      setYear(availableYears[0]);
+    }
+  }, [availableYears]);
+
   const heading = "Personal";
 
   const [isFlipped, setIsFlipped] = useState(false);
@@ -85,6 +119,7 @@ function StaffCard() {
 
 
   return (
+    
     <div className="relative h-full w-full" style={{ perspective: 1000 }}>
       <div
         ref={cardRef}
@@ -96,7 +131,7 @@ function StaffCard() {
           <Card className="relative bg-white w-full h-full flex flex-col">
             <CardHeader>
               <CardTitle>
-                <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
+                <h1 className="title">
                   {heading}
                 </h1>
               </CardTitle>
@@ -106,25 +141,28 @@ function StaffCard() {
               <Separator className="bg-black/10 h-2" />
 
               <div className="flex justify-end items-end mt-2">
-                <Select>
-                  <SelectTrigger className="w-fit">
+              <Select
+  value={year ? String(year) : undefined}
+  onValueChange={(val) => setYear(Number(val))}
+>
+                  <SelectTrigger className="selector">
                     <SelectValue placeholder="Jahr" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>Jahr</SelectLabel>
-                      <SelectItem value="2026">2026</SelectItem>
-                      <SelectItem value="2027">2027</SelectItem>
-                      <SelectItem value="2028">2028</SelectItem>
-                      <SelectItem value="2029">2029</SelectItem>
-                      <SelectItem value="2030">2030</SelectItem>
+                    <SelectLabel>Jahr</SelectLabel>
+                       {availableYears?.map((y) => (
+                       <SelectItem key={y} value={String(y)}>
+                         {y}
+                         </SelectItem>
+      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex-1 min-h-0 w-full mt-2">
-        <ChartBarStacked />
+        <ChartBarStacked data={data ?? []}/>
       </div>
             </CardContent>
 

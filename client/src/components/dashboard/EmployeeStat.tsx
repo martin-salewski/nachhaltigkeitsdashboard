@@ -3,15 +3,35 @@ import gsap from "gsap";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
-interface StatCardProps {
-  value: string;
-  label: string;
-  change?: string;
-  changeType?: "positive" | "negative";
+interface PeopleStatsRecord {
+  year: number;
+  month: number;
+  students: number;
+  employees: number;
+  professors: number;
 }
 
-export function StatCard({ value, label, change, changeType }: StatCardProps) {
+async function fetchPeopleStatsRecord(): Promise<PeopleStatsRecord[]> {
+  const url = "http://localhost:3000/api/people_stats?latest=1";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch people stats");
+  return res.json();
+}
+
+function usePeopleStats() {
+  return useQuery({
+    queryKey: ["employee_stat"],
+    queryFn: fetchPeopleStatsRecord,
+  });
+}
+
+export function EmployeeStat() {
+  const { data, isFetching, isPending } = usePeopleStats();
+  const row = data?.[0];
+  const employees = row?.employees ?? 0;
+
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -26,13 +46,7 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
   }, []);
 
   const flipCard = useCallback(() => {
-    if (
-      isAnimating ||
-      !cardRef.current ||
-      !frontRef.current ||
-      !backRef.current
-    )
-      return;
+    if (isAnimating || !cardRef.current || !frontRef.current || !backRef.current) return;
 
     setIsAnimating(true);
 
@@ -47,11 +61,7 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
       tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(frontRef.current, { visibility: "hidden" })
         .set(backRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 180,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 180, duration: 0.3, ease: "power2.out" });
     } else {
       tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(backRef.current, { visibility: "hidden" })
@@ -62,41 +72,19 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
 
   return (
     <div className="perspective-[1000px] h-full w-full">
-      <div
-        ref={cardRef}
-        className="relative h-full w-full"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        {/* FRONT */}
+      <div ref={cardRef} className="relative h-full w-full" style={{ transformStyle: "preserve-3d" }}>
         <div ref={frontRef} style={{ backfaceVisibility: "hidden" }}>
-          <Card
-            className="absolute inset-0 h-full w-full"
-            style={{ fontFamily: '"SimStd", sans-serif' }}
-          >
+          <Card className="absolute inset-0 h-full w-full" style={{ fontFamily: '"SimStd", sans-serif' }}>
             <CardContent>
-              <div>
-
-                <div className="w-full h-full flex items-start flex-col">
-                  <div className="flex flex-row gap-x-3">
-                  <p className="text-5xl font-bold text-black/80">{value}</p>
-                  {change && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded justify-center items-center flex ${
-                        changeType === "positive"
-                          ? "bg-green-100 text-green-700 h-5"
-                          : "bg-red-100 text-red-700 h-5"
-                      }`}
-                    >
-                      {changeType === "positive" ? "↗" : "↘"}
-                      {change}
-                    </span>
-                  )}
-                 
-                
-                  </div>
-                  <Separator className="bg-black/10 h-2 w-full" />
-                  <p className="text-sm text-black/60 mt-1">{label}</p>
+              <div className="w-full h-full flex items-start flex-col">
+                <div className="flex flex-row gap-x-3 items-baseline">
+                  <p className="text-5xl font-bold text-black/80 mt-4">
+                    {isPending ? "…" : employees}
+                  </p>
                 </div>
+                <Separator className="bg-black/10 h-2 w-full" />
+                <h1 className="title">Beschäftigte</h1>
+                {isFetching && <p className="text-xs text-black/40 mt-1">aktualisiere…</p>}
               </div>
             </CardContent>
 
@@ -111,22 +99,13 @@ export function StatCard({ value, label, change, changeType }: StatCardProps) {
           </Card>
         </div>
 
-        {/* BACK */}
         <div
           ref={backRef}
           className="absolute inset-0 h-full w-full"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            visibility: "hidden",
-          }}
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", visibility: "hidden" }}
         >
-          <Card
-            className="relative h-full w-full"
-            style={{ fontFamily: '"SimStd", sans-serif' }}
-          >
-            <CardContent className="h-full w-full">
-            </CardContent>
+          <Card className="relative h-full w-full" style={{ fontFamily: '"SimStd", sans-serif' }}>
+            <CardContent className="h-full w-full"></CardContent>
 
             <button
               onClick={flipCard}

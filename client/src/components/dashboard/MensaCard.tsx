@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
+import { DatePickerDemo } from "@/components/ui/datepicker"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -9,22 +9,45 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
-  SelectLabel,
-} from "@/components/ui/select";
+
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
-import { ChartBarDefault } from "../ui/barchart2";
+import { ChartBarMenu } from "../ui/barchart_menu";
+import { format } from "date-fns"
+
+interface MensaMealStats {
+  id: number
+  date: number
+  category: string
+  count: number
+}
+async function fetchMensaMealStats(
+  year?: number,
+  category?: string,
+  count?: number
+): Promise<MensaMealStats[]> {
+  const params = new URLSearchParams();
+  if (year) params.set("year", year.toString())
+  if (count) params.set("count", count.toString())
+  if (category) params.set("category", category.toString())
+  const url = `http://localhost:3000/api/mensa_meal_stats${params.toString() ? `?${params}` : ""
+  }`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch people stats");
+  return res.json();
+}
 
 function MensaCard() {
+  type BarRow = { name: string; value: number } 
+
+async function fetchMensaBars(dateISO: string): Promise<BarRow[]> {
+  const res = await fetch(`/api/mensa?date=${encodeURIComponent(dateISO)}`)
+  if (!res.ok) throw new Error("Fetch fehlgeschlagen")
+  return res.json()
+}
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -100,32 +123,18 @@ function MensaCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden h-full w-full"
         >
-          <Card className=" w-full h-full bg-white rounded-lg border border-gray-300">
+          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 flex flex-col">
             <CardHeader>
-              <CardTitle className="font-bold opacity-60 text-xl font-[SimStd']">
-                Menü
+              <CardTitle> 
+                <h1 className="title"> Menü</h1>
               </CardTitle>
               <Separator className=" w-full h-2 bg-black/10" />
               <div className="flex w-full justify-end mb-2">
-                <Select>
-                  <SelectTrigger className="w-fit">
-                    <SelectValue placeholder="Jahr" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Jahr</SelectLabel>
-                      <SelectItem value="2026">2026</SelectItem>
-                      <SelectItem value="2027">2027</SelectItem>
-                      <SelectItem value="2028">2028</SelectItem>
-                      <SelectItem value="2029">2029</SelectItem>
-                      <SelectItem value="2030">2030</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+              <DatePickerDemo onDateChange={setSelectedDate} />
               </div>
             </CardHeader>
-            <CardContent>
-              <ChartBarDefault />
+            <CardContent className="flex-1 min-h-0 flex items-center justify-center">
+              <ChartBarMenu />
             </CardContent>
             <button
               onClick={flipCard}

@@ -6,6 +6,26 @@ import { ChartRadialText } from "../ui/radialchart";
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
+interface BuildingRatingRecord {
+  year: number
+  month: number
+  score: number
+  co2PerPerson?: number | null
+}
+
+async function fetchBuildingRatingRecord(score?: number): Promise<BuildingRatingRecord[]> {
+  const params = new URLSearchParams();
+  if (score) params.set("score", String(score));
+
+  const queryString = params.toString();
+  const url = `http://localhost:3000/api/building_rating${queryString ? `?${queryString}` : ""}`;  
+  
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch building rating");
+  return res.json();
+}
+
+
 export function BuildingRatingCard() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -13,22 +33,12 @@ export function BuildingRatingCard() {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
-
-  const { isPending, data, isFetching, isLoading } = useQuery({
-    queryKey: ["score"],
-    queryFn: async () => {
-      const response = await fetch("/random-api?min=1&max=100");
-      return await response.json();
-    },
+  const [score, setScore] = useState<number | undefined>(undefined);
+  const { data, isFetching, isPending } = useQuery({
+    queryKey: ["building_rating", score],
+    queryFn: () => fetchBuildingRatingRecord(score), 
   });
 
-  {
-    isPending ? <div>Loading...</div> : null;
-  }
-
-  {
-    isLoading ? <div>Loading...</div> : null;
-  }
 
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
@@ -75,7 +85,7 @@ export function BuildingRatingCard() {
       })
         .set(backRef.current, { visibility: "hidden" })
         .set(frontRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
+        .to(cardRef.current,       {
           rotateY: 0,
           duration: 0.3,
           ease: "power2.out",
@@ -101,8 +111,8 @@ export function BuildingRatingCard() {
         >
           <Card className="relative h-full w-full pb-4">
             <CardHeader className="">
-              <CardTitle className="text-base text-foreground/90 flex flex-col mt-2">
-                <h1 className="text-md font-['SimStd'] font-bold text-[14px] text-black/60">
+              <CardTitle>
+                <h1 className="title mt-2">
                   Gesamtbewertung des Gebäudes
                 </h1>
                 <Separator className="bg-black/10 h-2" />
@@ -114,7 +124,7 @@ export function BuildingRatingCard() {
                 CO₂-Emissionen des Gebäudes pro Person im Monatsdurchschnitt
               </p>
 
-              {isPending || isLoading ? (
+              {isPending || isPending ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
@@ -125,7 +135,7 @@ export function BuildingRatingCard() {
                   <div className="relative w-full h-full">
                     <div className="flex flex-row justify-center">
                       <ChartRadialText
-                        score={Number(data?.[0] ?? 10)}
+                        score={Number(data?.[0]?.score ?? 10)}
                         size="md"
                       />
                     </div>
@@ -133,7 +143,7 @@ export function BuildingRatingCard() {
                 </div>
               )}
 
-              {isFetching && !(isPending || isLoading) ? (
+              {isFetching && !(isPending || isPending) ? (
                 <p className="mt-3 text-[10px] text-muted-foreground">
                   Aktualisiere…
                 </p>

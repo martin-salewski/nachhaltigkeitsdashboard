@@ -106,12 +106,12 @@ export function GoalsCard() {
         >
           <Card className="relative w-full h-full">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">{heading}</h1>
+              <CardTitle className="flex flex-col gap-2">
+                <h1 className="title">{heading}</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex w-full justify-end">
                   <Select>
-                    <SelectTrigger className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60">
+                    <SelectTrigger className="selector">
                       <SelectValue placeholder="Jahr" />
                     </SelectTrigger>
                     <SelectContent>

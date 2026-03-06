@@ -99,12 +99,12 @@ export function LearningPlaceCard() {
         >
           <Card className="relative w-full h-full">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">{heading}</h1>
+              <CardTitle className="flex flex-col gap-2">
+                <h1 className="title">{heading}</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex w-full justify-end">
                   <Select>
-                    <SelectTrigger className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60">
+                    <SelectTrigger className="selector">
                       <SelectValue placeholder="Jahr" />
                     </SelectTrigger>
                     <SelectContent>
@@ -122,7 +122,7 @@ export function LearningPlaceCard() {
                 <div className="">
                 <div className="flex flex-row">
                 <div className="flex items-start w-full">
-                  <p className="text-sm font-['Helvetica']">Anzahl der Lehrberatungen</p>
+                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Lehrberatungen</p>
                   </div>
                   
                 
@@ -133,16 +133,16 @@ export function LearningPlaceCard() {
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
                 <div className="flex items-start w-full">
-                  <p className="text-sm font-['Helvetica']">Anzahl der Lernplätze im Selbststudium</p>
+                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Lernplätze im Selbststudium</p>
                   </div>
                   <div className="flex justify-end items-center w-full">
-                  <p className="text-sm font-bold font-['Helvetica']">40</p>
+                  <p className="text-sm font-bold font-['Helvetica']  text-black/60">40</p>
                   </div>
                 </div>
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
                 <div className="flex items-start w-full">
-                  <p className="text-sm font-['Helvetica']">Anzahl Forschungsprojekte</p>
+                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl Forschungsprojekte</p>
                   <div className="flex justify-end items-center w-full">
                   <p className="text-sm font-bold font-['Helvetica']">17</p>
                   </div>
@@ -151,34 +151,28 @@ export function LearningPlaceCard() {
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
                 <div className="flex justify-start w-full">
-                  <p className="text-sm font-['Helvetica'] ">Anzahl WerkstudentInnen</p>
+                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl WerkstudentInnen</p>
                   </div>
                   <div className="flex justify-end items-center w-full">
-                  <p className="text-sm font-bold font-['Helvetica']">17</p>
+                  <p className="text-sm font-bold font-['Helvetica']  text-black/60">17</p>
                   </div>
                 </div>
                 </div>
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex justify-start">
-                  <p className="text-sm font-['Helvetica'] mb-2">Studierendenzufriedenheit</p>
+                  <p className="text-sm font-['Helvetica'] mb-2 font-medium text-black/60">Studierendenzufriedenheit</p>
                 </div>
-                
-
-<div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-  <div
-    className="h-full text-white bg-[var(--color-chart-1)] font-medium flex items-center justify-center font-['Helvetica'] text-xs rounded-full"
-    style={{ width: `${progress}%` }}
-  >
-    {progress}%
-  </div>
-</div>
-
-
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full text-white bg-(--color-chart-1) font-medium flex items-center justify-center font-['Helvetica'] text-xs rounded-full"
+                  style={{ width: `${progress}%` }}
+                >
+                  {progress}%
+                </div>
+              </div>
               </CardTitle>
             </CardHeader>
-
             <CardContent className="pt-2">
-           
             </CardContent>
 
             <button

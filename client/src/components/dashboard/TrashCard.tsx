@@ -233,7 +233,7 @@ export function TrashCard() {
           <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
               <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">Müll</h1>
+                <h1 className="title">Müll</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex gap-2 w-full justify-end">
                   <Select
@@ -241,8 +241,7 @@ export function TrashCard() {
                     onValueChange={setSelectedCategory}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                      className="selector"
                     >
                       <SelectValue />
                     </SelectTrigger>
@@ -257,8 +256,7 @@ export function TrashCard() {
                     onValueChange={setSelectedPeriod}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                    className="selector"
                     >
                       <SelectValue placeholder="KW" />
                     </SelectTrigger>
@@ -290,7 +288,7 @@ export function TrashCard() {
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-full w-full"
+                  className="h-full w-full mt-3"
                 >
                   <BarChart
                     accessibilityLayer

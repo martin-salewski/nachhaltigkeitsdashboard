@@ -205,7 +205,7 @@ export function UsageCard() {
           <Card className="relative h-full w-full" data-card-id="co2">
             <CardHeader className="">
               <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">
+                <h1 className="title">
                   Verbrauch
                 </h1>
                 <Separator className="bg-black/10 h-2" />
@@ -215,8 +215,7 @@ export function UsageCard() {
                     onValueChange={setSelectedCategory}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                      className="selector"
                     >
                       <SelectValue />
                     </SelectTrigger>
@@ -232,9 +231,7 @@ export function UsageCard() {
                     onValueChange={setSelectedPeriod}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
-                    >
+                     className="selector">
                       <SelectValue placeholder="Monat" />
                     </SelectTrigger>
                     <SelectContent>
