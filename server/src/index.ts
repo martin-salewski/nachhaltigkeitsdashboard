@@ -2,8 +2,16 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { db } from './drizzle/db.js'
-import { commuteStats, emissions, buildingRating, peopleStats, staffDemographics, studentDemographics } from './drizzle/schema.js'
+import { commuteStats,
+  emissions,
+  buildingRating,
+  peopleStats,
+  staffDemographics,
+  studentDemographics,
+  mensaMenu,
+  mensaMealStats } from './drizzle/schema.js'
 import { eq, and, desc, asc } from 'drizzle-orm'
+import { runXmlImport } from './jobs/xmlImport.js'
 
 const app = new Hono()
 
@@ -134,17 +142,15 @@ app.get("/api/building_rating", async (c) => {
       const all = await db.select().from(peopleStats);
       return c.json(all);
     });
-app.get('/api/staff_demographics', async (c) => {
-  const year = c.req.query('year')
 
-  const query = db.select().from(staffDemographics)
-
-  const data = year
-    ? await query.where(eq(staffDemographics.year, parseInt(year)))
-    : await query
-
-  return c.json(data)
-})
+    app.get('/api/staff_demographics/years', async (c) => {
+      const data = await db
+        .selectDistinct({ year: staffDemographics.year })
+        .from(staffDemographics)
+        .orderBy(staffDemographics.year);
+    
+      return c.json(data.map((d) => d.year));
+    });
 
 app.get('/api/staff_demographics', async (c) => {
   const year = c.req.query('year')
@@ -157,6 +163,7 @@ app.get('/api/staff_demographics', async (c) => {
 
   return c.json(data)
 })
+
 
 // GET /api/student_demographics
 app.get('/api/student_demographics', async (c) => {
@@ -180,6 +187,33 @@ app.get('/api/student_demographics/years', async (c) => {
 
   return c.json(data.map(r => r.year))
 })
+
+ app.post("/admin/import", async (c) => {
+  try {
+    await runXmlImport();
+    return c.json({ success: true, message: "Import erfolgreich abgeschlossen" });
+  } catch (err) {
+    return c.json({ success: false, message: String(err) }, 500);
+  }
+}); 
+
+app.get("/api/mensa_menu", async (c) => {
+  const date = c.req.query("date") ?? new Date().toISOString().split("T")[0];
+  
+  const menu = await db
+    .select()
+    .from(mensaMenu)
+    .where(eq(mensaMenu.date, date));
+
+  return c.json(menu);
+});
+
+export default app;
+
+/* app.delete("/admin/clear", async (c) => {
+  await db.delete(mensaMenu);
+  return c.json({ success: true, message: "Alle Einträge gelöscht" });
+}); */
 
 serve({
   fetch: app.fetch,

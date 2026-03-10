@@ -166,12 +166,8 @@ export function GoalsCard() {
             <CardContent className="pt-2 text-sm text-muted-foreground space-y-3">
               <p>
                 Diese Karte zeigt die Nachhaltigkeitsziele der Hochschule und
-                dient als Orientierung für die kommenden Jahre.
+                dient als Orientierung für das jeweilige Jahr. Sofern diese nicht im selben Jahr erreicht werden, werden sie weiterhin für die kommenden Jahre angezeigt
               </p>
-              <ul className="list-disc pl-4 space-y-1 text-xs">
-                <li>Ziele sind zeitlich definiert (z.B. bis 2027/2028).</li>
-                <li>Sie können als Grundlage für Maßnahmen dienen.</li>
-              </ul>
             </CardContent>
 
             <button

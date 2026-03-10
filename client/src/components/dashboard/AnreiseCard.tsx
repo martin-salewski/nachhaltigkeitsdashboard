@@ -25,6 +25,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
+/* import { useTranslation } from "react-i18next"; */
 
 interface CommuteData {
   id: number;
@@ -97,6 +98,7 @@ async function fetchPeriods(): Promise<Period[]> {
 }
 
 export function AnreiseCard() {
+  /* const { t } = useTranslation(); */
   const [selectedCategory, setSelectedCategory] = useState<string>("gesamt");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
@@ -234,7 +236,7 @@ export function AnreiseCard() {
           <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
               <CardTitle className="flex flex-col gap-2">
-                <h1 className="title">Anreise</h1>
+                <h1 className="title">{("Anreise")}</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex gap-2 w-full justify-end">
                   <Select
@@ -388,7 +390,7 @@ export function AnreiseCard() {
             <CardContent className="pt-2 overflow-hidden">
               <div className="space-y-4 text-sm text-muted-foreground">
                 <p>
-                  <strong className="text-foreground">Anreise</strong> zeigt die
+                  <strong className="text-foreground text">Anreise</strong> zeigt die
                   Verteilung der Verkehrsmittel, mit denen Studierende und
                   Mitarbeitende zur Hochschule kommen.
                 </p>

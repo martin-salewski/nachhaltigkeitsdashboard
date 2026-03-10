@@ -162,7 +162,37 @@ function HeatMix() {
             </CardHeader>
             <Separator className="mb-2 bg-black/10" />
             <CardContent className="mt-2 text-sm text-muted-foreground"></CardContent>
-
+            <div className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  <strong className="text-foreground text">Anreise</strong> zeigt die
+                  Verteilung der Verkehrsmittel, mit denen Studierende und
+                  Mitarbeitende zur Hochschule kommen.
+                </p>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-foreground">Kategorien:</h4>
+                  <ul className="space-y-1 text-xs">
+                    <li className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm bg-[#1D3A6A]" />
+                      <span>ÖPNV – Öffentlicher Nahverkehr</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm bg-[#2B76BB]" />
+                      <span>Auto – PKW-Nutzung</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm bg-[#4DBAF7]" />
+                      <span>Fahrrad – Radfahrer</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm bg-[#7DB8FF]" />
+                      <span>zu Fuß – Fußgänger</span>
+                    </li>
+                  </ul>
+                </div>
+                <p className="text-xs">
+                  Datenquelle: Mobilitätsbefragung
+                </p>
+              </div>
             <button
               onClick={flipCard}
               disabled={isAnimating}

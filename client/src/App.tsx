@@ -1,3 +1,5 @@
+import "../src/utils/i18n";
+import React from "react";
 import { useLayoutEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import Navbar from "@/components/ui/navbar";
 import gsap from "gsap";

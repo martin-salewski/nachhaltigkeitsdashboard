@@ -274,7 +274,7 @@ export function TrashCard() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="">
+            <CardContent>
               {isLoading ? (
                 <div className="flex items-center justify-center h-full w-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
@@ -374,15 +374,20 @@ export function TrashCard() {
             visibility: "hidden",
           }}
         >
-          <Card className="relative h-full">
+          <Card className="relative h-full w-full">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium text-foreground/90">
                 Über diese Karte
               </CardTitle>
             </CardHeader>
             <Separator className="mb-2" />
-            <CardContent className="pt-2 overflow-hidden">
+            <CardContent >
               <div className="space-y-4 text-sm text-muted-foreground">
+              <p>
+                  <strong className="text-foreground text">Müll</strong> zeigt die
+                  Verteilung der Verkehrsmittel, mit denen Studierende und
+                  Mitarbeitende zur Hochschule kommen.
+                </p>
                <div className="space-y-2">
                 </div>
               </div>

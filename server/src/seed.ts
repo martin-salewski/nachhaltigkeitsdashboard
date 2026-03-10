@@ -69,8 +69,8 @@ interface StaffDemographicsRecord {
 
 interface MensaMealStats {
   id: number
-  date: Date
-  category: String
+  date: number
+  category: string
   count: number
 }
 

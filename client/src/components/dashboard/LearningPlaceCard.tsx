@@ -119,30 +119,24 @@ export function LearningPlaceCard() {
                     </SelectContent>
                   </Select>
                   </div>
-                <div className="">
+                
                 <div className="flex flex-row">
-                <div className="flex items-start w-full">
+                <div className="flex flex-row items-start w-full">
                   <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Lehrberatungen</p>
                   </div>
-                  
-                
                   <div className="flex justify-end items-center w-full">
                   <p className="text-sm font-bold font-['Helvetica']">120</p>
                   </div>
                 </div>
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
-                <div className="flex items-start w-full">
-                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Lernplätze im Selbststudium</p>
-                  </div>
-                  <div className="flex justify-end items-center w-full">
-                  <p className="text-sm font-bold font-['Helvetica']  text-black/60">40</p>
-                  </div>
+                  <p className="flex items-start w-full text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Lernplätze im Selbststudium</p>
+                  <p className="flex justify-end items-center text-sm font-bold font-['Helvetica']">40</p>
                 </div>
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
                 <div className="flex items-start w-full">
-                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl Forschungsprojekte</p>
+                  <p className="flex items-start w-full text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der Forschungsprojekte</p>
                   <div className="flex justify-end items-center w-full">
                   <p className="text-sm font-bold font-['Helvetica']">17</p>
                   </div>
@@ -151,13 +145,13 @@ export function LearningPlaceCard() {
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex flex-row">
                 <div className="flex justify-start w-full">
-                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl WerkstudentInnen</p>
+                  <p className="text-sm font-['Helvetica'] font-medium text-black/60">Anzahl der WerkstudentInnen</p>
                   </div>
                   <div className="flex justify-end items-center w-full">
-                  <p className="text-sm font-bold font-['Helvetica']  text-black/60">17</p>
+                  <p className="text-sm font-bold font-['Helvetica']">17</p>
                   </div>
                 </div>
-                </div>
+                
                 <Separator className="gap-2 mb-4"/>
                 <div className="flex justify-start">
                   <p className="text-sm font-['Helvetica'] mb-2 font-medium text-black/60">Studierendenzufriedenheit</p>

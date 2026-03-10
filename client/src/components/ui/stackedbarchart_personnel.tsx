@@ -45,10 +45,40 @@ export function ChartBarStacked({ data }: ChartProps) {
       <BarChart accessibilityLayer data={chartData} maxBarSize={45}>
         <CartesianGrid vertical={false} />
         <XAxis
-        dataKey="department"
-        tickLine={false} 
-        tickMargin={10} 
-        axisLine={false} />
+          dataKey="department"
+          tickLine={false}
+          tickMargin={10}
+          axisLine={false}
+          interval={0}
+          height={60}
+          tick={({ x, y, payload }) => (
+            <text
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="hanging"
+              fontSize={12}
+              fill="currentColor"
+            >
+              {payload.value
+                .split(" ")
+                .reduce((lines: string[], word: string) => {
+                  const last = lines[lines.length - 1];
+                  if (last && (last + " " + word).length <= 20) {
+                    lines[lines.length - 1] = last + " " + word;
+                  } else {
+                    lines.push(word);
+                  }
+                  return lines;
+                }, [])
+                .map((line: string, i: number) => (
+                  <tspan key={i} x={x} dy={i === 0 ? 0 : 14}>
+                    {line}
+                  </tspan>
+                ))}
+            </text>
+          )}
+        />
         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
         <ChartLegend content={<ChartLegendContent />} />
         {genderKeys.map((gender, index) => (

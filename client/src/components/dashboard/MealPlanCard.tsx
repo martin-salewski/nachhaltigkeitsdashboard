@@ -1,23 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BarChart2, TrendingUp } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
-  SelectLabel,
-} from "@/components/ui/select";
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -25,14 +7,76 @@ import gsap from "gsap";
 import Vegan from "@/assets/icons/vegan.svg";
 import Veggie from "@/assets/icons/veggie.svg";
 import { ReactSVG } from "react-svg";
+import { DatePickerDemo } from "../ui/datepicker";
+
+interface MensaMenuItem {
+  id: number;
+  date: string;
+  name: string;
+  category: "vegan" | "vegetarisch" | "fleisch";
+  allergens: string | null;
+  priceStudent: number;
+  priceStaff: number;
+  co2Grams: number;
+}
+
+async function fetchMensaMenu(date: string): Promise<MensaMenuItem[]> {
+  const res = await fetch(`http://localhost:3000/api/mensa_menu?date=${date}`);
+  if (!res.ok) throw new Error("Fehler beim Laden des Speiseplans");
+  return res.json();
+}
+  function formatPrice(price: number): string {
+    return price.toLocaleString("de-DE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " €";
+  }
+  function CategoryIcon({ category }: { category: string }) {
+    if (category === "vegan") {
+      return (
+        <ReactSVG
+          src={Vegan}
+          beforeInjection={(svg) => svg.classList.add("w-16", "h-8")}
+        />
+      );
+    }
+    if (category === "vegetarisch") {
+      return (
+        <ReactSVG
+          src={Veggie}
+          beforeInjection={(svg) => svg.classList.add("w-16", "h-8")}
+        />
+      );
+    }
+    return null;
+  }
 
 function MealPlanCard() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
 
   const cardRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
+
+  function toLocalDateString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  
+  const dateString = selectedDate
+    ? toLocalDateString(selectedDate)
+    : toLocalDateString(new Date());
+
+    const { data: menu = [], isLoading, isError } = useQuery({
+      queryKey: ["mensa", dateString],
+      queryFn: () => fetchMensaMenu(dateString),
+    });
 
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
@@ -109,77 +153,55 @@ function MealPlanCard() {
               </CardTitle>
               <Separator className=" w-full h-2 bg-black/10" />
               <div className="flex w-full justify-end">
-                <Select>
-                  <SelectTrigger className="selector">
-                    <SelectValue placeholder="Jahr" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Jahr</SelectLabel>
-                      <SelectItem value="2026">2026</SelectItem>
-                      <SelectItem value="2027">2027</SelectItem>
-                      <SelectItem value="2028">2028</SelectItem>
-                      <SelectItem value="2029">2029</SelectItem>
-                      <SelectItem value="2030">2030</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+              <div className="flex w-full justify-end mb-2">
+              <DatePickerDemo onDateChange={setSelectedDate} />
+              </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-col">
-                  <p className="font-helvetica font-normal text-sm">
-                    Kartoffel-Lauch-Eintopf mit Kräutern (Sl)
-                  </p>
-                  <ReactSVG
-                    src={Vegan}
-                    beforeInjection={(svg) => {
-                      svg.classList.add("w-16", "h-8");
-                    }}
-                  ></ReactSVG>
+            {isLoading && (
+                <p className="text-sm text-muted-foreground">Lädt...</p>
+              )}
+              {isError && (
+                <p className="text-sm text-red-500">
+                  Fehler beim Laden des Speiseplans.
+                </p>
+              )}
+              {!isLoading && !isError && menu.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Kein Speiseplan für diesen Tag.
+                </p>
+              )}
+              {menu.map((item, index) => (
+                <div key={item.id}>
+                  <div className="flex flex-row justify-between items-center py-1">
+                    <div className="flex flex-col">
+                      
+                      <p className="font['HelveticaNowText'] font-normal text-xs text-black/80">
+                        {item.name} <span className="font-[HelveticaNowText] font-normal text-xs text-black/40">
+                       ({item.allergens})
+                      </span>
+                      </p>
+                      
+                      <CategoryIcon category={item.category} />
+                    </div>
+                    <div className="flex flex-row justify-around w-fill min-w-60">
+                      <p className="font-bold font-['SimStd'] text-xs">
+                        {formatPrice(item.priceStudent)}
+                      </p>
+                      <p className="font-bold font-['SimStd'] text-xs">
+                        {formatPrice(item.priceStaff)}
+                      </p>
+                      <p className="font-bold font-['SimStd'] text-xs">
+                        {item.co2Grams} g
+                      </p>
+                    </div>
+                  </div>
+                  {index < menu.length - 1 && (
+                    <Separator className="w-full h-2 bg-black/10" />
+                  )}
                 </div>
-                <div className="flex flex-row justify-around gap-10 w-fill min-w-60">
-                  <p className="font-bold font-['SimStd']">1,11 €</p>
-                  <p className="font-bold font-['SimStd']">1,84 €</p>
-                  <p className="font-bold font-['SimStd']">56 g</p>
-                </div>
-              </div>
-
-              <Separator className=" w-full h-2 bg-black/10" />
-              <div className="flex flex-row items-center">
-                <div className="flex flex-col">
-                  <p className="font-helvetica font-normal text-sm">
-                    Maccaroni ´n Cheese (1, Gl, La, Sf, We) mit Käsesauce (2,
-                    Ei, La)
-                  </p>
-                  <ReactSVG
-                      src={Veggie}
-                      beforeInjection={(svg) => {
-                        svg.classList.add("w-16", "h-8");
-                      }}
-                    ></ReactSVG>
-                </div>
-                <div className="flex flex-row w-fill justify-around gap-10 min-w-60">
-                  <p className="font-bold font-['SimStd']">2,70 €</p>
-                  <p className="font-bold font-['SimStd']">4,47 €</p>
-                  <p className="font-bold font-['SimStd']">1000 g</p>
-                </div>
-              </div>
-              <Separator className=" w-full h-2 bg-black/10" />
-              <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-col">
-                  <p className="font-helvetica font-normal text-sm">
-                    Frisch gebackener bayerischer Fleischkäse mit Bratensauce
-                    und kartoffelpüree
-                  </p>
-                </div>
-                <div className="flex flex-row w-fill justify-around gap-10 min-w-60">
-                  <p className="font-bold font-['SimStd']">3,10 €</p>
-                  <p className="font-bold font-['SimStd']">5,13 €</p>
-                  <p className="font-bold font-['SimStd']">848 g</p>
-                </div>
-              </div>
+              ))}
             </CardContent>
             <button
               onClick={flipCard}

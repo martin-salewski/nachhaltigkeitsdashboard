@@ -105,7 +105,10 @@ export function StudentsStat() {
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", visibility: "hidden" }}
         >
           <Card className="relative h-full w-full" style={{ fontFamily: '"SimStd", sans-serif' }}>
-            <CardContent className="h-full w-full"></CardContent>
+            <CardContent className="pt-2 text-sm text-muted-foreground space-y-3">
+            <p>
+                Erfasst alle aktuell an der Hochschule eingeschriebenen Studenten
+              </p></CardContent>
 
             <button
               onClick={flipCard}

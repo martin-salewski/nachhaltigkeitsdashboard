@@ -126,7 +126,7 @@ async function fetchMensaBars(dateISO: string): Promise<BarRow[]> {
           <Card className="w-full h-full bg-white rounded-lg border border-gray-300 flex flex-col">
             <CardHeader>
               <CardTitle> 
-                <h1 className="title"> Menü</h1>
+                <h1 className="title"> CO₂ pro Mahlzeitart</h1>
               </CardTitle>
               <Separator className=" w-full h-2 bg-black/10" />
               <div className="flex w-full justify-end mb-2">
@@ -163,8 +163,13 @@ async function fetchMensaBars(dateISO: string): Promise<BarRow[]> {
               </CardTitle>
             </CardHeader>
             <Separator className="mb-2 bg-black/10" />
-            <CardContent className="pt-2 text-sm text-muted-foreground"></CardContent>
-
+            <CardContent className="pt-2 space-y-4 text-sm text-muted-foreground ">
+            <p>
+                  Zeigt den CO²-Ausstoß pro Mahlzeitkategorie, der durch die Produktion, Verarbeitung und Lieferung entsteht. Die Werte Umfassen die Gesamtmenge der hergestellten Speisen pro Tag
+                </p>
+                <div className="space-y-2">
+                </div>
+            </CardContent>
             <button
               onClick={flipCard}
               disabled={isAnimating}

@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "i18next": "^25.8.16",
+    "react-i18next": "^16.5.6",
     "react-svg": "^16.4.0"
   }
 }
