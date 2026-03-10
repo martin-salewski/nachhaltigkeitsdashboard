@@ -3,7 +3,7 @@
 import * as React from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -134,8 +134,8 @@ export function ChartLineInteractive() {
   );
 
   return (
-    <Card className="py-4 sm:py-0 w-xl border-0 shadow-none">
-      <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-3 sm:pb-0">
+    <Card className="h-full border-0 shadow-none">
+      <div className="flex flex-col h-full justify-center gap-1 px-6 pb-3 sm:pb-0">
         {/*  <CardTitle>Line Chart - Interactive</CardTitle>
           <CardDescription>
             Showing total visitors for the last 3 months
@@ -165,7 +165,7 @@ export function ChartLineInteractive() {
       <CardContent className="px-2 sm:p-6">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
+          className="aspect-auto h-full w-full"
         >
           <LineChart
             accessibilityLayer
@@ -193,7 +193,7 @@ export function ChartLineInteractive() {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[150px]"
+                  className="w-full"
                   nameKey="views"
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("en-US", {

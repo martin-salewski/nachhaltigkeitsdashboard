@@ -25,6 +25,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
+/* import { useTranslation } from "react-i18next"; */
 
 interface CommuteData {
   id: number;
@@ -97,6 +98,7 @@ async function fetchPeriods(): Promise<Period[]> {
 }
 
 export function AnreiseCard() {
+  /* const { t } = useTranslation(); */
   const [selectedCategory, setSelectedCategory] = useState<string>("gesamt");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
@@ -217,24 +219,24 @@ export function AnreiseCard() {
 
   return (
     <div
-      className="perspective-[1000px]"
+      className="perspective-[1000px] h-full w-full"
       style={{ fontFamily: '"SimStd", sans-serif' }}
     >
       <div
         ref={cardRef}
-        className="relative transform-style-3d"
+        className="relative transform-style-3d h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
         <div
           ref={frontRef}
-          className="backface-hidden"
+          className="backface-hidden h-full w-full"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative">
+          <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">Anreise</h1>
+              <CardTitle className="flex flex-col gap-2">
+                <h1 className="title">{("Anreise")}</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex gap-2 w-full justify-end">
                   <Select
@@ -243,7 +245,7 @@ export function AnreiseCard() {
                   >
                     <SelectTrigger
                       size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                      className="selector"
                     >
                       <SelectValue />
                     </SelectTrigger>
@@ -277,21 +279,21 @@ export function AnreiseCard() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="">
+            <CardContent className="min-h-0 min-w-0">
               {isLoading ? (
-                <div className="flex items-center justify-center h-[180px]">
+                <div className="flex items-center justify-center h-full w-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
                   </div>
                 </div>
               ) : chartData.length === 0 ? (
-                <div className="flex items-center justify-center h-[180px] text-muted-foreground text-sm">
+                <div className="flex items-center justify-center h-full w-full text-muted-foreground text-sm">
                   Keine Daten verfügbar
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-[180px] w-full"
+                  className="h-full w-full mt-2"
                 >
                   <BarChart
                     accessibilityLayer
@@ -371,14 +373,14 @@ export function AnreiseCard() {
         {/* Back of card */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
             visibility: "hidden",
           }}
         >
-          <Card className="relative h-full">
+          <Card className="relative h-full w-full">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium text-foreground/90">
                 Über diese Karte
@@ -388,7 +390,7 @@ export function AnreiseCard() {
             <CardContent className="pt-2 overflow-hidden">
               <div className="space-y-4 text-sm text-muted-foreground">
                 <p>
-                  <strong className="text-foreground">Anreise</strong> zeigt die
+                  <strong className="text-foreground text">Anreise</strong> zeigt die
                   Verteilung der Verkehrsmittel, mit denen Studierende und
                   Mitarbeitende zur Hochschule kommen.
                 </p>

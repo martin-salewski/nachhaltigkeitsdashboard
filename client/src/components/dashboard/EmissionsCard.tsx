@@ -188,24 +188,24 @@ export function EmissionsCard() {
 
   return (
     <div
-      className="perspective-[1000px]"
+      className="perspective-[1000px] h-full w-full"
       style={{ fontFamily: '"SimStd", sans-serif' }}
     >
       <div
         ref={cardRef}
-        className="relative transform-style-3d"
+        className="relative h-full w-full transform-style-3d"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
         <div
           ref={frontRef}
-          className="backface-hidden"
+          className="backface-hidden h-full w-full"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative">
+          <Card className="relative h-full w-full" data-card-id="co2">
             <CardHeader className="">
-              <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="text-xl/4 font-bold text-black/60">
+              <CardTitle className="flex flex-col gap-2">
+                <h1 className="title">
                   Emissionen
                 </h1>
                 <Separator className="bg-black/10 h-2" />
@@ -215,8 +215,7 @@ export function EmissionsCard() {
                     onValueChange={setSelectedCategory}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                      className="selector"
                     >
                       <SelectValue />
                     </SelectTrigger>
@@ -232,8 +231,7 @@ export function EmissionsCard() {
                     onValueChange={setSelectedPeriod}
                   >
                     <SelectTrigger
-                      size="sm"
-                      className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
+                     className="selector" 
                     >
                       <SelectValue placeholder="Monat" />
                     </SelectTrigger>
@@ -251,21 +249,21 @@ export function EmissionsCard() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="">
+            <CardContent className="min-h-0">
               {isLoading ? (
-                <div className="flex items-center justify-center h-[180px]">
+                <div className="flex items-center justify-center h-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
                     Laden...
                   </div>
                 </div>
               ) : chartData.length === 0 ? (
-                <div className="flex items-center justify-center h-[180px] text-muted-foreground text-sm">
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   Keine Daten verfügbar
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-[180px] w-full"
+                  className="h-full w-full"
                 >
                   <LineChart
                     accessibilityLayer
@@ -327,7 +325,6 @@ export function EmissionsCard() {
                 </ChartContainer>
               )}
             </CardContent>
-            {/* Info icon */}
             <button
               onClick={flipCard}
               className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10"
@@ -341,7 +338,7 @@ export function EmissionsCard() {
         {/* Back of card */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden h-full w-full"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",

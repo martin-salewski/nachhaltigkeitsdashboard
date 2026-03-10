@@ -1,8 +1,19 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+
+
+.selector{
+  font-size: 0.75rem;
+  font-family: 'SimStd';
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  height: 1.8rem
+}
+
+.title {
+  font-size: 1 rem;
+  font-family: 'SimStd';
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: left;
 }
 
 .logo {
@@ -16,6 +27,14 @@
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.buttonicon {
+  fill: white
+}
+
+.button {
+  background-color: #2B76BB
 }
 
 @keyframes logo-spin {
