@@ -39,21 +39,24 @@ export function DonutChart({ data, labels }: Props) {
       },
       tooltip: {
         enabled: true,
+        callbacks: {
+          label: (ctx) => ` ${ctx.parsed}%`,
+        },
       },
     },
   };
 
   return (
-    <div className="w-full min-h-0 flex flex-col items-center">
-      <div className="flex-1 min-h-0  max-h-[55%] w-full">
+    <div className="w-full flex flex-col items-center gap-3">
+      <div className="h-[130px] w-full">
         <Doughnut data={chartData} options={options} />
       </div>
 
-      <ul className="shrink-0 mt-4 w-full flex justify-around items-center flex-wrap gap-y-2 text-xs">
+      <ul className="w-full grid grid-cols-3 gap-y-2 gap-x-3 text-[11px]">
         {labels.map((label, i) => (
-          <li key={label} className="flex items-center gap-2">
+          <li key={label} className="flex items-start gap-1.5 min-w-0">
             <span
-              className="h-2.5 w-2.5 rounded-full"
+              className="h-2.5 w-2.5 mt-0.5 shrink-0 rounded-full"
               style={{ backgroundColor: colors[i] }}
             />
             <span className="text-muted-foreground">{label}</span>

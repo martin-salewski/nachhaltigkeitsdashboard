@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 import { useMemo } from "react";
 import {
   ChartContainer,
@@ -29,16 +29,20 @@ export function ChartBarStacked({ data }: ChartProps) {
   }, [genderKeys]);
 
   const chartData = useMemo(() => {
-    return data.reduce((acc, entry) => {
+    const grouped = data.reduce((acc, entry) => {
       const existing = acc.find(d => d.department === entry.department);
       if (existing) {
-        existing[entry.gender] = (existing[entry.gender] ?? 0) + entry.count;
+        existing[entry.gender] = (existing[entry.gender] ?? 0) + Number(entry.count);
       } else {
-        acc.push({ department: entry.department, [entry.gender]: entry.count });
+        acc.push({ department: entry.department, [entry.gender]: Number(entry.count) });
       }
       return acc;
     }, [] as Record<string, any>[]);
-  }, [data]);
+    return grouped.map(row => ({
+      ...row,
+      total: genderKeys.reduce((sum, g) => sum + (row[g] ?? 0), 0),
+    }));
+  }, [data, genderKeys]);
 
   return (
     <ChartContainer config={chartConfig} className="h-full w-full min-h-0">
@@ -88,7 +92,16 @@ export function ChartBarStacked({ data }: ChartProps) {
             stackId="a"
             fill={`var(--chart-${index + 1})`}
             radius={index === genderKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
-          />
+          >
+            {index === genderKeys.length - 1 && (
+              <LabelList
+                dataKey="total"
+                position="top"
+                style={{ fontSize: 11, fill: "rgba(0,0,0,0.5)", fontWeight: 600 }}
+                formatter={(v: number) => v.toLocaleString()}
+              />
+            )}
+          </Bar>
         ))}
       </BarChart>
     </ChartContainer>

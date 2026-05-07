@@ -3,7 +3,7 @@ import { gte } from "drizzle-orm";
 import { db } from '../drizzle/db.js'
 import { mensaMenu } from "../drizzle/schema.js";
 
-const XML_URL = "https://www.studierendenwerk-mainz.de/speiseplan/Speiseplan-HS.xml"; // 👈 URL hier eintragen
+const XML_URL = "https://www.studierendenwerk-mainz.de/speiseplan/Speiseplan-HS.xml"; 
 
 // "27.02.2026" → "2026-02-27"
 function parseDate(raw: string): string {

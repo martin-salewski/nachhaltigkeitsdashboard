@@ -1,20 +1,42 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { useQuery } from "@tanstack/react-query";
 import { DonutChart } from "../ui/donutchart_heat";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+interface HeatingMixRow {
+  id: number;
+  year: number;
+  source: string;
+  percentage: number;
+}
+
+const SOURCE_ORDER = ["Müll-KWK", "Klärschlamm", "Solar", "Wärmepumpe", "Gas-KWK", "Biomasse"];
+
+const SOURCE_I18N: Record<string, string> = {
+  "Müll-KWK":   "energySources.wasteChp",
+  Klärschlamm:  "energySources.sewageSludge",
+  Solar:        "energySources.solar",
+  Wärmepumpe:   "energySources.heatPump",
+  "Gas-KWK":    "energySources.gasChp",
+  Biomasse:     "energySources.biomass",
+};
+
+async function fetchHeatingMix(): Promise<HeatingMixRow[]> {
+  const res = await fetch("http://localhost:3000/api/heating_mix");
+  if (!res.ok) throw new Error("Failed to fetch heating mix");
+  return res.json();
+}
 
 function HeatMix() {
+  const { t } = useTranslation();
+  const [selectedYear, setSelectedYear] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -22,7 +44,24 @@ function HeatMix() {
   const frontRef = useRef<HTMLDivElement | null>(null);
   const backRef = useRef<HTMLDivElement | null>(null);
 
-  const heading = "Heatmix";
+  const { data: allData = [] } = useQuery({
+    queryKey: ["heating_mix"],
+    queryFn: fetchHeatingMix,
+  });
+
+  const years = [...new Set(allData.map((r) => r.year))].sort((a, b) => b - a);
+
+  useEffect(() => {
+    if (years.length > 0 && !selectedYear) {
+      setSelectedYear(String(years[0]));
+    }
+  }, [years.length]);
+
+  const activeYear = selectedYear ? parseInt(selectedYear) : years[0];
+  const yearData = allData.filter((r) => r.year === activeYear);
+  const sources = SOURCE_ORDER.filter((s) => yearData.some((r) => r.source === s));
+  const labels = sources.map((s) => t(SOURCE_I18N[s] ?? s));
+  const chartData = sources.map((source) => yearData.find((r) => r.source === source)?.percentage ?? 0);
 
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
@@ -31,172 +70,84 @@ function HeatMix() {
   }, []);
 
   const flipCard = useCallback(() => {
-    if (
-      isAnimating ||
-      !cardRef.current ||
-      !frontRef.current ||
-      !backRef.current
-    )
-      return;
-
+    if (isAnimating || !cardRef.current || !frontRef.current || !backRef.current) return;
     setIsAnimating(true);
-
     const timeline = gsap.timeline({
-      onComplete: () => {
-        setIsFlipped((prev) => !prev);
-        setIsAnimating(false);
-      },
+      onComplete: () => { setIsFlipped((prev) => !prev); setIsAnimating(false); },
     });
-
     if (!isFlipped) {
       timeline
-        .to(cardRef.current, {
-          rotateY: 90,
-          duration: 0.3,
-          ease: "power2.in",
-        })
+        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(frontRef.current, { visibility: "hidden" })
         .set(backRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 180,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 180, duration: 0.3, ease: "power2.out" });
     } else {
       timeline
-        .to(cardRef.current, {
-          rotateY: 90,
-          duration: 0.3,
-          ease: "power2.in",
-        })
+        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(backRef.current, { visibility: "hidden" })
         .set(frontRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 0,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 0, duration: 0.3, ease: "power2.out" });
     }
   }, [isFlipped, isAnimating]);
 
   return (
     <div className="perspective-[1000px] h-full w-full">
-      <div
-        ref={cardRef}
-        className="relative h-full w-full"
-        style={{ transformStyle: "preserve-3d" }}
-      >
+      <div ref={cardRef} className="relative h-full w-full" style={{ transformStyle: "preserve-3d" }}>
         {/* FRONT */}
-        <div
-          ref={frontRef}
-          style={{ backfaceVisibility: "hidden" }}
-          className="backface-hidden h-full w-full"
-        >
-          <Card className="relative h-full w-full" data-card-id="strom">
+        <div ref={frontRef} style={{ backfaceVisibility: "hidden" }} className="backface-hidden h-full w-full">
+          <Card className="relative h-full w-full">
             <CardHeader>
               <CardTitle>
-                <h1 className="title">
-                  {heading}
-                </h1>
+                <h1 className="title">{t("heatMix.title")}</h1>
                 <Separator className="bg-black/10 h-2 mb-2" />
                 <div className="flex w-full justify-end">
-                  <Select>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
                     <SelectTrigger className="selector">
-                      <SelectValue placeholder="Jahr" />
+                      <SelectValue placeholder={t("year")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Jahr</SelectLabel>
-                        <SelectItem value="2026">2026</SelectItem>
-                        <SelectItem value="2027">2027</SelectItem>
-                        <SelectItem value="2028">2028</SelectItem>
-                        <SelectItem value="2029">2029</SelectItem>
-                        <SelectItem value="2030">2030</SelectItem>
+                        <SelectLabel>{t("year")}</SelectLabel>
+                        {years.map((y) => (
+                          <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
               </CardTitle>
             </CardHeader>
-
-            <CardContent className="min-h-0">
-              <DonutChart
-                labels={[
-                  "Müll-KWK",
-                  "Klärschlamm",
-                  "Solar",
-                  "Wärmepumpe",
-                  "Gask-KWK",
-                  "Biomasse",
-                ]}
-                data={[55, 25, 25, 75, 80, 17]}
-              />
+            <CardContent>
+              <DonutChart labels={labels} data={chartData} />
             </CardContent>
-
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Mehr Informationen"
             >
               <Info className="size-4" />
             </button>
           </Card>
         </div>
-
         {/* BACK */}
         <div
           ref={backRef}
           className="absolute inset-0 backface-hidden h-full w-full"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            visibility: "hidden",
-          }}
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", visibility: "hidden" }}
         >
-          <Card className="relative h-full w-full" data-card-id="strom">
-            <CardHeader className="mb-2">
-              <CardTitle className="text-base font-medium text-foreground/90">
-                Über diese Karte
-              </CardTitle>
+          <Card className="relative h-full w-full">
+            <CardHeader className="mb-1">
+              <CardTitle className="text-base font-medium text-foreground/90">{t("cardBack.title")}</CardTitle>
             </CardHeader>
             <Separator className="mb-2 bg-black/10" />
-            <CardContent className="mt-2 text-sm text-muted-foreground"></CardContent>
-            <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  <strong className="text-foreground text">Anreise</strong> zeigt die
-                  Verteilung der Verkehrsmittel, mit denen Studierende und
-                  Mitarbeitende zur Hochschule kommen.
-                </p>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-foreground">Kategorien:</h4>
-                  <ul className="space-y-1 text-xs">
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#1D3A6A]" />
-                      <span>ÖPNV – Öffentlicher Nahverkehr</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#2B76BB]" />
-                      <span>Auto – PKW-Nutzung</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#4DBAF7]" />
-                      <span>Fahrrad – Radfahrer</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm bg-[#7DB8FF]" />
-                      <span>zu Fuß – Fußgänger</span>
-                    </li>
-                  </ul>
-                </div>
-                <p className="text-xs">
-                  Datenquelle: Mobilitätsbefragung
-                </p>
-              </div>
+            <CardContent className="mt-2 text-sm text-muted-foreground text-justify">
+              <p>{t("heatMix.description")}</p>
+            </CardContent>
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück"
             >
               <X className="size-4" />

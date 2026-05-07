@@ -1,5 +1,8 @@
 export type TimelineItem = {
   title: string;
+  year?: number;
+  completed?: boolean;
+  completedLabel?: string;
 };
 
 /* export function Timeline({ items }: { items: TimelineItem[] }) {
@@ -25,9 +28,14 @@ export function Timeline({ items }: { items: TimelineItem[] }) {
       {items.map((goal, idx) => {
         const isLast = idx === items.length - 1;
         return (
-          <li key={idx} className="relative flex gap-4">
-            {/* left "rail": dot + dashed line */}
-            <div className="relative flex justify-center">
+          <li key={idx} className="relative flex gap-3">
+            {/* year label left of dot */}
+            <span className="text-xs text-muted-foreground/60 w-8 text-right mt-1 shrink-0 font-['HelveticaNowText']">
+              {goal.year ?? ""}
+            </span>
+
+            {/* dot + dashed line */}
+            <div className="relative flex justify-center shrink-0">
               <span className="mt-1 h-3 w-3 rounded-full bg-(--color-chart-1)" />
               {!isLast && (
                 <span
@@ -38,8 +46,11 @@ export function Timeline({ items }: { items: TimelineItem[] }) {
             </div>
 
             {/* right content */}
-            <p className="text-sm leading-5 text-foreground/90 w-full text-start pb-8">
+            <p className={`text-xs leading-5 font-['HelveticaNowText'] w-full text-start pb-8 ${goal.completed ? "text-foreground/40" : "text-foreground/80"}`}>
               {goal.title}
+              {goal.completed && (
+                <span className="ml-1.5 text-foreground/50">{goal.completedLabel ?? "(abgeschlossen)"}</span>
+              )}
             </p>
           </li>
         );

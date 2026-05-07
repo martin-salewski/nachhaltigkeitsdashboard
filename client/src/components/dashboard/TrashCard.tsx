@@ -6,18 +6,16 @@ import {
   LabelList,
   XAxis,
   YAxis,
+  Tooltip,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -25,80 +23,50 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
+import { useTranslation } from "react-i18next";
 
-interface CommuteData {
+interface WasteRow {
   id: number;
   year: number;
-  month: number;
-  mode: string;
-  percentage: number;
-  personCount: number | null;
+  week: number;
+  category: string;
+  valueTons: number;
 }
 
-interface Period {
-  year: number;
-  semester: number;
-  label: string;
-}
-
-// Color mapping for transport modes
-const MODE_COLORS: Record<string, string> = {
-  "zu Fuß": "#7DB8FF",
-  Fahrrad: "#4DBAF7",
-  Auto: "#2B76BB",
-  ÖPNV: "#1D3A6A",
+const CATEGORY_COLORS: Record<string, string> = {
+  Papier: "#7DB8FF",
+  Rest: "#1D3A6A",
+  Bio: "#4D719C",
+  "Gelber Sack": "#4DBAF7",
 };
 
-// Chart configuration for transport modes
+const WASTE_I18N: Record<string, string> = {
+  Papier:        "wasteCategories.paper",
+  Rest:          "wasteCategories.residual",
+  Bio:           "wasteCategories.organic",
+  "Gelber Sack": "wasteCategories.recyclable",
+};
+
 const chartConfig = {
-  percentage: {
-    label: "Anteil",
-  },
-  zuFuss: {
-    label: "zu Fuß",
-    color: "#7DB8FF",
-  },
-  Fahrrad: {
-    label: "Fahrrad",
-    color: "#4DBAF7",
-  },
-  Auto: {
-    label: "Auto",
-    color: "#2B76BB",
-  },
-  OEPNV: {
-    label: "ÖPNV",
-    color: "#1D3A6A",
-  },
+  valueTons:     { label: "Tonnen" },
+  Papier:        { label: "Papier",      color: "#7DB8FF" },
+  Rest:          { label: "Restmüll",    color: "#1D3A6A" },
+  Bio:           { label: "Biomüll",     color: "#4D719C" },
+  "Gelber Sack": { label: "Gelber Sack", color: "#4DBAF7" },
 } satisfies ChartConfig;
 
-async function fetchCommuteStats(
-  year?: number,
-  semester?: number,
-  category?: string
-): Promise<CommuteData[]> {
-  const params = new URLSearchParams();
-  if (year) params.set("year", year.toString());
-  if (semester) params.set("semester", semester.toString());
-  if (category) params.set("category", category);
-
-  const url = `http://localhost:3000/api/commute-stats${
-    params.toString() ? `?${params}` : ""
-  }`;
+async function fetchWaste(year?: number): Promise<WasteRow[]> {
+  const url = year
+    ? `http://localhost:3000/api/waste?year=${year}`
+    : `http://localhost:3000/api/waste`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch commute stats");
-  return res.json();
-}
-
-async function fetchPeriods(): Promise<Period[]> {
-  const res = await fetch("http://localhost:3000/api/commute-stats/periods");
-  if (!res.ok) throw new Error("Failed to fetch periods");
+  if (!res.ok) throw new Error("Failed to fetch waste data");
   return res.json();
 }
 
 export function TrashCard() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("gesamt");
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+  const { t } = useTranslation();
+  const [selectedYear, setSelectedYear] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -106,111 +74,68 @@ export function TrashCard() {
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
 
-  const { data: periods = [] } = useQuery({
-    queryKey: ["commute-periods"],
-    queryFn: fetchPeriods,
+  const { data: allData = [] } = useQuery({
+    queryKey: ["waste"],
+    queryFn: () => fetchWaste(),
   });
 
-  // Set default period to the latest one when periods load
+  const years = useMemo(
+    () => [...new Set(allData.map((r) => r.year))].sort((a, b) => b - a),
+    [allData]
+  );
+
   useEffect(() => {
-    if (periods.length > 0 && !selectedPeriod) {
-      setSelectedPeriod(`${periods[0].year}-${periods[0].semester}`);
+    if (years.length > 0 && !selectedYear) {
+      setSelectedYear(String(years[0]));
     }
-  }, [periods, selectedPeriod]);
+  }, [years, selectedYear]);
 
-  // Parse selected period into year and semester
-  const { selectedYear, selectedSemester } = useMemo(() => {
-    if (!selectedPeriod)
-      return { selectedYear: undefined, selectedSemester: undefined };
-    const [year, semester] = selectedPeriod.split("-").map(Number);
-    return { selectedYear: year, selectedSemester: semester };
-  }, [selectedPeriod]);
-
-  // Get the label for the selected period
-  const selectedPeriodLabel = useMemo(() => {
-    const period = periods.find(
-      (p) => p.year === selectedYear && p.semester === selectedSemester
-    );
-    return period?.label || "";
-  }, [periods, selectedYear, selectedSemester]);
-
-  const { data: commuteData = [], isLoading } = useQuery({
-    queryKey: [
-      "commute-stats",
-      selectedYear,
-      selectedSemester,
-      selectedCategory,
-    ],
-    queryFn: () =>
-      fetchCommuteStats(selectedYear, selectedSemester, selectedCategory),
-    enabled: !!selectedYear && !!selectedSemester,
-  });
-
-  // Transform data for recharts - sort by personCount descending
   const chartData = useMemo(() => {
-    return [...commuteData]
-      .sort((a, b) => (b.personCount || 0) - (a.personCount || 0))
-      .map((item) => ({
-        mode: item.mode,
-        count: item.personCount || 0,
-        percentage: `${Math.round(item.percentage)}%`,
-        fill: MODE_COLORS[item.mode] || "#3a6b8c",
-      }));
-  }, [commuteData]);
+    const year = selectedYear ? parseInt(selectedYear) : years[0];
+    const yearRows = allData.filter((r) => r.year === year);
+    const categories = ["Papier", "Rest", "Bio", "Gelber Sack"];
+    return categories.map((cat) => {
+      const rows = yearRows.filter((r) => r.category === cat);
+      const total = rows.reduce((sum, r) => sum + r.valueTons, 0);
+      return {
+        category: t(WASTE_I18N[cat] ?? cat),
+        valueTons: Math.round(total * 10) / 10,
+        fill: CATEGORY_COLORS[cat] ?? "#3a6b8c",
+      };
+    });
+  }, [allData, selectedYear, years, t]);
 
-  // Calculate max value for chart domain
-  const maxCount = useMemo(() => {
-    const max = Math.max(...chartData.map((d) => d.count), 0);
-    // Round up to nearest 1000 for evenly spaced ticks
-    return Math.ceil(max / 1000) * 1000;
-  }, [chartData]);
+
+  useEffect(() => {
+    if (!frontRef.current || !backRef.current) return;
+    frontRef.current.style.visibility = "visible";
+    backRef.current.style.visibility = "hidden";
+  }, []);
 
   const flipCard = useCallback(() => {
-    if (
-      isAnimating ||
-      !cardRef.current ||
-      !frontRef.current ||
-      !backRef.current
-    )
+    if (isAnimating || !cardRef.current || !frontRef.current || !backRef.current)
       return;
 
     setIsAnimating(true);
     const timeline = gsap.timeline({
       onComplete: () => {
-        setIsFlipped(!isFlipped);
+        setIsFlipped((prev) => !prev);
         setIsAnimating(false);
       },
     });
 
     if (!isFlipped) {
-      // Flip to back
       timeline
-        .to(cardRef.current, {
-          rotateY: 90,
-          duration: 0.3,
-          ease: "power2.in",
-        })
+        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(frontRef.current, { visibility: "hidden" })
         .set(backRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 180,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 180, duration: 0.3, ease: "power2.out" });
     } else {
       timeline
-        .to(cardRef.current, {
-          rotateY: 90,
-          duration: 0.3,
-          ease: "power2.in",
-        })
+        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(backRef.current, { visibility: "hidden" })
         .set(frontRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 0,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 0, duration: 0.3, ease: "power2.out" });
     }
   }, [isFlipped, isAnimating]);
 
@@ -221,142 +146,84 @@ export function TrashCard() {
     >
       <div
         ref={cardRef}
-        className="relative transform-style- h-full w-full"
+        className="relative h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* Front of card */}
+        {/* FRONT */}
         <div
           ref={frontRef}
           className="backface-hidden h-full w-full"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Card className="relative h-full w-full" data-card-id="travel">
-            <CardHeader className="">
+          <Card className="relative h-full w-full">
+            <CardHeader>
               <CardTitle className="text-base font-medium text-foreground/90 flex flex-col gap-2">
-                <h1 className="title">Müll</h1>
+                <h1 className="title">{t("trash.title")}</h1>
                 <Separator className="bg-black/10 h-2" />
-                <div className="flex gap-2 w-full justify-end">
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                  >
-                    <SelectTrigger
-                      className="selector"
-                    >
-                      <SelectValue />
+                <div className="flex w-full justify-end">
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="selector">
+                      <SelectValue placeholder={t("year")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gesamt">gesamt</SelectItem>
-                      <SelectItem value="studierende">Studierende</SelectItem>
-                      <SelectItem value="mitarbeiter">Mitarbeiter</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={selectedPeriod}
-                    onValueChange={setSelectedPeriod}
-                  >
-                    <SelectTrigger
-                    className="selector"
-                    >
-                      <SelectValue placeholder="KW" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {periods.map((period) => (
-                        <SelectItem
-                          key={`${period.year}-${period.semester}`}
-                          value={`${period.year}-${period.semester}`}
-                        >
-                          {period.label}
-                        </SelectItem>
-                      ))}
+                      <SelectGroup>
+                        <SelectLabel>{t("year")}</SelectLabel>
+                        {years.map((y) => (
+                          <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full w-full">
-                  <div className="animate-pulse text-muted-foreground text-sm">
-                    Laden...
-                  </div>
-                </div>
-              ) : chartData.length === 0 ? (
-                <div className="flex items-center justify-center h-full w-full text-muted-foreground text-sm">
-                  Keine Daten verfügbar
-                </div>
-              ) : (
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-full w-full mt-3"
+            <CardContent className="pb-6">
+              <ChartContainer config={chartConfig} className="h-[140px] w-full">
+                <BarChart
+                  data={chartData}
+                  layout="vertical"
+                  margin={{ left: 0, right: 50, top: 0, bottom: 0 }}
                 >
-                  <BarChart
-                    accessibilityLayer
-                    data={chartData}
-                    layout="vertical"
-                    margin={{ left: 0, right: 50 }}
-                  >
-                    <CartesianGrid
-                      horizontal={false}
-                      strokeDasharray="4 4"
-                      stroke="#e5e7eb"
+                  <CartesianGrid horizontal={false} strokeDasharray="4 4" stroke="#e5e7eb" />
+                  <YAxis
+                    dataKey="category"
+                    type="category"
+                    tickLine={false}
+                    tickMargin={8}
+                    axisLine={false}
+                    width={88}
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v) => v}
+                  />
+                  <XAxis
+                    dataKey="valueTons"
+                    type="number"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(v) => `${v} t`}
+                  />
+                  <Tooltip
+                    cursor={false}
+                    formatter={(value) => [`${value} t`, "Gesamt"]}
+                  />
+                  <Bar dataKey="valueTons" layout="vertical" radius={[0, 4, 4, 0]} barSize={22}>
+                    <LabelList
+                      dataKey="valueTons"
+                      position="right"
+                      offset={8}
+                      className="fill-black/60 text-[11px]"
+                      formatter={(v: number) => `${v} t`}
                     />
-                    <YAxis
-                      dataKey="mode"
-                      type="category"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      width={60}
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) =>
-                        chartConfig[value as keyof typeof chartConfig]?.label ??
-                        value
-                      }
-                    />
-                    <XAxis
-                      dataKey="count"
-                      type="number"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      tick={{ fontSize: 10 }}
-                      tickFormatter={(value) => value.toLocaleString("de-DE")}
-                      domain={[0, maxCount]}
-                      tickCount={5}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          hideLabel
-                          formatter={(value) => [
-                            `${Number(value).toLocaleString("de-DE")} Personen`,
-                            "",
-                          ]}
-                        />
-                      }
-                    />
-                    <Bar
-                      dataKey="count"
-                      layout="vertical"
-                      radius={[0, 4, 4, 0]}
-                      barSize={28}
-                    >
-                      <LabelList
-                        dataKey="percentage"
-                        position="right"
-                        offset={12}
-                        className="fill-black/60 text-[11px]"
-                      />
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-              )}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
             </CardContent>
             <button
               onClick={flipCard}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10"
+              disabled={isAnimating}
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Mehr Informationen"
             >
               <Info className="size-4" />
@@ -364,7 +231,7 @@ export function TrashCard() {
           </Card>
         </div>
 
-        {/* Back of card */}
+        {/* BACK */}
         <div
           ref={backRef}
           className="absolute inset-0 backface-hidden h-full w-full"
@@ -375,27 +242,19 @@ export function TrashCard() {
           }}
         >
           <Card className="relative h-full w-full">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1">
               <CardTitle className="text-base font-medium text-foreground/90">
-                Über diese Karte
+                {t("cardBack.title")}
               </CardTitle>
             </CardHeader>
-            <Separator className="mb-2" />
-            <CardContent >
-              <div className="space-y-4 text-sm text-muted-foreground">
-              <p>
-                  <strong className="text-foreground text">Müll</strong> zeigt die
-                  Verteilung der Verkehrsmittel, mit denen Studierende und
-                  Mitarbeitende zur Hochschule kommen.
-                </p>
-               <div className="space-y-2">
-                </div>
-              </div>
+            <Separator className="mb-2 bg-black/10" />
+            <CardContent className="pt-2 text-sm text-muted-foreground space-y-3 text-justify">
+              <p>{t("trash.description")}</p>
             </CardContent>
-            {/* Close icon */}
             <button
               onClick={flipCard}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10"
+              disabled={isAnimating}
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück zur Ansicht"
             >
               <X className="size-4" />

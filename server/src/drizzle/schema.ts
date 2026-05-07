@@ -1,18 +1,33 @@
 import { int, real, sqliteTable, text, index } from "drizzle-orm/sqlite-core";
 
 // ============================================
+// USERS / AUTH
+// ============================================
+
+export const users = sqliteTable("users", {
+  id: int().primaryKey({ autoIncrement: true }),
+  username: text().notNull().unique(),
+  email: text().notNull().unique(),
+  passwordHash: text(), // null until user sets password via invite
+  role: text().notNull().default("mitarbeiterin"), // 'admin' | 'mitarbeiterin'
+  isActive: int().notNull().default(0), // 0 = invited, 1 = active
+  inviteToken: text(),
+  resetToken: text(),
+  tokenExpiresAt: int(), // Unix timestamp (seconds)
+});
+
+// ============================================
 // PEOPLE & DEMOGRAPHICS
 // ============================================
 
 export const peopleStats = sqliteTable("people_stats", {
   id: int().primaryKey({ autoIncrement: true }),
   year: int().notNull(),
-  month: int().notNull(),
   students: int().notNull(),
   employees: int().notNull(),
   professors: int().notNull(),
 }, (table) => [
-  index("people_stats_time_idx").on(table.year, table.month),
+  index("people_stats_time_idx").on(table.year),
 ]);
 
 export const studentDemographics = sqliteTable("student_demographics", {
@@ -23,6 +38,16 @@ export const studentDemographics = sqliteTable("student_demographics", {
   count: int().notNull(),
 }, (table) => [
   index("student_demographics_year_idx").on(table.year),
+]);
+
+export const studentDepartment = sqliteTable("student_department", {
+  id: int().primaryKey({ autoIncrement: true }),
+  year: int().notNull(),
+  department: text().notNull(),
+  gender: text().notNull(), // 'männlich', 'weiblich', 'divers'
+  count: int().notNull(),
+}, (table) => [
+  index("student_department_year_idx").on(table.year),
 ]);
 
 export const staffDemographics = sqliteTable("staff_demographics", {
@@ -64,6 +89,14 @@ export const buildingRating = sqliteTable("building_rating", {
 // ============================================
 // SUSTAINABILITY GOALS
 // ============================================
+
+export const goalLogs = sqliteTable("goal_logs", {
+  id: int().primaryKey({ autoIncrement: true }),
+  action: text().notNull(), // 'created' | 'deleted'
+  goalTitle: text().notNull(),
+  username: text().notNull(),
+  timestamp: int().notNull(), // Unix timestamp (seconds)
+});
 
 export const sustainabilityGoals = sqliteTable("sustainability_goals", {
   id: int().primaryKey({ autoIncrement: true }),
@@ -175,6 +208,23 @@ export const mensaMenu = sqliteTable("mensa_menu", {
 }, (table) => [
   index("mensa_menu_date_idx").on(table.date),
   index("mensa_menu_category_idx").on(table.category),
+]);
+
+// ============================================
+// AIR QUALITY
+// ============================================
+
+export const airQuality = sqliteTable("air_quality", {
+  id: int().primaryKey({ autoIncrement: true }),
+  timestamp: text().notNull(), // ISO datetime "YYYY-MM-DDTHH:MM"
+  temperature: real().notNull(), // °C
+  co2: int().notNull(),          // ppm
+  moisture: real().notNull(),    // % relative humidity
+  voc: int().notNull(),          // ppb (volatile organic compounds)
+  pm25: real().notNull(),        // µg/m³ (Feinstaub PM2.5)
+  pm10: real().notNull(),        // µg/m³ (Feinstaub PM10)
+}, (table) => [
+  index("air_quality_timestamp_idx").on(table.timestamp),
 ]);
 
 // ============================================
