@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { TrendBadge } from "@/components/ui/TrendBadge";
 
 interface PeopleStatsRecord {
   year: number;
@@ -14,7 +16,7 @@ interface PeopleStatsRecord {
 }
 
 async function fetchPeopleStatsRecord(): Promise<PeopleStatsRecord[]> {
-  const url = "http://localhost:3000/api/people_stats?latest=1";
+  const url = "http://localhost:3000/api/people_stats?latest=2";
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch people stats");
   return res.json();
@@ -28,9 +30,11 @@ function usePeopleStats() {
 }
 
 export function ProfStat() {
+  const { t } = useTranslation();
   const { data, isFetching, isPending } = usePeopleStats();
-  const row = data?.[0];
-  const professors = row?.professors ?? 0;
+  const current = data?.[0]?.professors ?? 0;
+  const previous = data?.[1]?.professors ?? 0;
+  const professors = current;
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -77,21 +81,24 @@ export function ProfStat() {
           <Card className="absolute inset-0 h-full w-full" style={{ fontFamily: '"SimStd", sans-serif' }}>
             <CardContent>
               <div className="w-full h-full flex items-start flex-col">
-                <div className="flex flex-row gap-x-3 items-baseline">
-                  <p className="text-5xl font-bold text-black/80 mt-4">
+                <div className="flex flex-row gap-x-3 items-baseline mt-4">
+                  <p className="text-5xl font-bold text-black/80">
                     {isPending ? "…" : professors}
                   </p>
+                  {!isPending && previous > 0 && (
+                    <TrendBadge current={current} previous={previous} />
+                  )}
                 </div>
-                <Separator className="bg-black/10 h-2 w-full" />
-                <h1 className="title">ProfessorInnen</h1>
-                {isFetching && <p className="text-xs text-black/40 mt-1">aktualisiere…</p>}
+                <Separator className="bg-black/10 h-2 w-full gap-0.5" />
+                <h1 className="title">{t("professors.title")}</h1>
+                {isFetching && <p className="text-xs text-black/40 mt-1">{t("loading")}</p>}
               </div>
             </CardContent>
 
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Mehr Informationen"
             >
               <Info className="size-4" />
@@ -105,16 +112,18 @@ export function ProfStat() {
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", visibility: "hidden" }}
         >
           <Card className="relative h-full w-full" style={{ fontFamily: '"SimStd", sans-serif' }}>
-          <CardContent className="pt-2 text-sm text-muted-foreground space-y-3">
-            <p>
-                Erfasst alle aktuell an der Hochschule angestellten ProfessorInnen und Lehrbeauftragen
-              </p></CardContent>
-
+            <CardHeader className="pb-1">
+              <CardTitle className="text-base font-medium text-foreground/90">{t("cardBack.title")}</CardTitle>
+            </CardHeader>
+            <Separator className="mb-1 bg-black/10" />
+            <CardContent className="pt-1 text-xs leading-relaxed text-muted-foreground text-justify">
+              <p>{t("professors.description")}</p>
+            </CardContent>
 
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück"
             >
               <X className="size-4" />

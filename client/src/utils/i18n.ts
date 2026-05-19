@@ -1,27 +1,385 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
 
-i18n.use(initReactI18next).init({
-  resources: {
-    de: {
-      translation: {
-        "Anreise": "Anreise"
-      }
+i18next
+  .use(initReactI18next)
+  .init({
+    lng: 'de',
+    debug: false,
+    resources: {
+      de: {
+        translation: {
+          login: {
+            title: "Nachhaltigkeitsdashboard",
+            subtitle: "Bitte melden Sie sich an, um fortzufahren",
+            username: "Benutzername",
+            usernamePlaceholder: "Benutzername eingeben",
+            password: "Passwort",
+            submit: "Anmelden",
+            loading: "Anmelden...",
+            error: "Ungültige Anmeldedaten",
+            networkError: "Verbindungsfehler. Bitte erneut versuchen.",
+          },
+          cardBack: { title: "Über diese Karte" },
+          loading: "Laden...",
+          updating: "Aktualisiere…",
+          noData: "Keine Daten verfügbar",
+          categories: "Kategorien:",
+          year: "Jahr",
+          month: "Monat",
+          semester: "Semester",
+          persons: "Personen",
+          filter: {
+            all: "gesamt",
+            students: "Studierende",
+            employees: "Mitarbeiter",
+            electricity: "Strom",
+            heating: "Heizung",
+            mobility: "Mobilität",
+          },
+          commute: {
+            title: "Anreise",
+            description: "zeigt die Verteilung der Verkehrsmittel, mit denen Studierende und Mitarbeitende zur Hochschule kommen.",
+            dataSource: "Datenquelle: Mobilitätsbefragung",
+            cat: {
+              oepnv: "ÖPNV – Öffentlicher Nahverkehr",
+              auto: "Auto – PKW-Nutzung",
+              bicycle: "Fahrrad – Radfahrer",
+              walking: "zu Fuß – Fußgänger",
+            },
+          },
+          buildingRating: {
+            title: "Gesamtbewertung des Gebäudes",
+            subtitle: "CO₂-Emissionen des Gebäudes pro Person im Monatsdurchschnitt",
+            description: "Diese Bewertung fasst Kennzahlen zur Gebäude-Performance zusammen. Der Score wird aus den CO₂-Emissionen pro Person (Monatsdurchschnitt) abgeleitet.",
+            score: { low: "kritisch", medium: "mittel", high: "gut" },
+          },
+          emissions: {
+            title: "Emissionen",
+            description: "zeigt die täglichen CO₂-Emissionen der Hochschule in Kilogramm.",
+            dataSource: "Datenquelle: Energiemonitoring",
+            cat: {
+              all: "Gesamt – Alle Emissionsquellen",
+              electricity: "Strom – Stromverbrauch",
+              heating: "Heizung – Heizenergie",
+              mobility: "Mobilität – Dienstreisen & Pendeln",
+            },
+          },
+          usage: {
+            title: "Verbrauch",
+            description: "Zeigt den monatlichen Energieverbrauch der Hochschule nach Energieträger.",
+            months: ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+          },
+          students: {
+            title: "StudentInnen",
+            description: "Erfasst alle aktuell an der Hochschule eingeschriebenen Studenten",
+          },
+          employees: {
+            title: "Beschäftigte",
+            description: "Erfasst alle aktuell an der Hochschule angestellten Personen exklusive der ProfessorInnen und Lehrbeauftragten",
+          },
+          professors: {
+            title: "ProfessorInnen",
+            description: "Erfasst alle aktuell an der Hochschule angestellten ProfessorInnen und Lehrbeauftragten",
+          },
+          goals: {
+            title: "Nachhaltigkeitsziele",
+            completed: "(abgeschlossen)",
+            description: "Diese Karte zeigt die offenen Nachhaltigkeitsziele der Hochschule und dient als Orientierung für die jeweiligen Jahre. Wird ein Ziel im vorgesehenen Jahr nicht erreicht, bleibt es auch in den darauffolgenden Jahren aufgeführt.",
+            items: {
+              "1": { title: "CO₂-Emissionen senken", detail: "Reduktion der standortbezogenen Emissionen pro Kopf" },
+              "2": { title: "Erneuerbare Energien erhöhen", detail: "Anteil erneuerbarer Energien am Strommix erhöhen" },
+              "3": { title: "Abfall reduzieren", detail: "Restmüllaufkommen durch bessere Trennung und Vermeidung senken" },
+              "4": { title: "Mensa-Angebot nachhaltiger", detail: "Mehr vegane/vegetarische Optionen und geringerer CO₂-Fußabdruck" },
+            },
+          },
+          trash: {
+            title: "Müll",
+            description: "Zeigt die Verteilung des wöchentlich angefallenen Abfalls der Hochschule Mainz je Abfallkategorie.",
+          },
+          mensa: {
+            title: "CO₂ pro Mahlzeitart",
+            description: "Zeigt den CO₂-Ausstoß pro Mahlzeitkategorie, der durch die Produktion, Verarbeitung und Lieferung entsteht. Die Werte umfassen die Gesamtmenge der hergestellten Speisen pro Tag.",
+          },
+          learningPlace: {
+            title: "Lernort",
+            consultations: "Anzahl der Lehrberatungen",
+            selfStudy: "Anzahl der Lernplätze im Selbststudium",
+            research: "Anzahl der Forschungsprojekte",
+            workingStudents: "Anzahl der WerkstudentInnen",
+            satisfaction: "Studierendenzufriedenheit",
+            description: "Diese Karte zeigt die Nachhaltigkeitsziele der Hochschule und dient als Orientierung für die kommenden Jahre.",
+          },
+          electricityMix: {
+            title: "Strommix",
+            description: "Zeigt den prozentualen Anteil je Energiequelle am Strom, den die Hochschule Mainz pro Jahr bezieht.",
+          },
+          staff: {
+            title: "Personal",
+            description: "Zeigt die Personalentwicklung nach Geschlecht und Fachbereich.",
+          },
+          studentsDepartment: {
+            title: "StudentInnen – Fachbereiche",
+            description: "Zeigt die Anzahl der Studierenden pro Fachbereich, aufgeteilt nach Geschlecht.",
+          },
+          heatMix: {
+            title: "Wärmemix",
+            description: "Zeigt den prozentualen Anteil je Energiequelle an der Wärmeversorgung, die die Hochschule Mainz pro Jahr bezieht.",
+          },
+          mealPlan: {
+            title: "Speiseplan",
+            error: "Fehler beim Laden des Speiseplans.",
+            noMenu: "Kein Speiseplan für diesen Tag.",
+            back: {
+              description: "Angezeigt wird immer der Speiseplan der aktuellen Woche des Studierendenwerks Mainz, welcher am Campus in der Lucy-Hillebrandt-Straße 2 der Hochschule Mainz zu finden ist.",
+              co2Label: "CO² Bewertung",
+              co2Good: "0 – 799 g · klimafreundlich",
+              co2Medium: "800 – 1300 g · mäßig",
+              co2Bad: "über 1300 g · emissionsreich",
+              allergenLabel: "Allergene",
+            },
+          },
+          airQuality: {
+            title: "Luftqualität",
+            back: {
+              description: "Zeigt aktuelle Luftqualitätswerte der letzten 24 Stunden.",
+              thresholdLabel: "Grenzwerte",
+              good: "gut",
+              medium: "mittel",
+              bad: "schlecht",
+              temperature: "Temperatur — Idealbereich 20–24 °C",
+              moisture: "Luftfeuchtigkeit — Idealbereich 40–60 %",
+              co2: "CO₂ in ppm — unter 800",
+              co2Range: "800–1400",
+              co2Bad: "über 1400",
+              pm25: "PM2.5 in µg/m³ — unter 12",
+              pm25Range: "12–35",
+              pm25Bad: "über 35",
+              pm10: "PM10 in µg/m³ — unter 54",
+              pm10Range: "54–154",
+              pm10Bad: "über 154",
+              voc: "VOC in ppb — unter 250",
+              vocRange: "250–500",
+              vocBad: "über 500",
+            },
+          },
+          energySources: {
+            solar: "Solar",
+            wind: "Wind",
+            hydro: "Wasserkraft",
+            biomass: "Biomasse",
+            naturalGas: "Erdgas",
+            coal: "Kohle",
+            wasteChp: "Müll-KWK",
+            sewageSludge: "Klärschlamm",
+            heatPump: "Wärmepumpe",
+            gasChp: "Gas-KWK",
+          },
+          mealTypes: {
+            meat: "Fleisch",
+            vegetarian: "Vegetarisch",
+            vegan: "Vegan",
+          },
+          genderLabels: {
+            male: "männlich",
+            female: "weiblich",
+            diverse: "divers",
+          },
+          wasteCategories: {
+            paper: "Papier",
+            residual: "Restmüll",
+            organic: "Biomüll",
+            recyclable: "Gelber Sack",
+          },
+        },
+      },
+      en: {
+        translation: {
+          login: {
+            title: "Sustainability Dashboard",
+            subtitle: "Please sign in to continue",
+            username: "Username",
+            usernamePlaceholder: "Enter username",
+            password: "Password",
+            submit: "Sign in",
+            loading: "Signing in...",
+            error: "Invalid credentials",
+            networkError: "Connection error. Please try again.",
+          },
+          cardBack: { title: "About this card" },
+          loading: "Loading...",
+          updating: "Updating...",
+          noData: "No data available",
+          categories: "Categories:",
+          year: "Year",
+          month: "Month",
+          semester: "Semester",
+          persons: "Persons",
+          filter: {
+            all: "all",
+            students: "Students",
+            employees: "Employees",
+            electricity: "Electricity",
+            heating: "Heating",
+            mobility: "Mobility",
+          },
+          commute: {
+            title: "Commute",
+            description: "shows the distribution of transport modes used by students and staff to get to campus.",
+            dataSource: "Data source: Mobility survey",
+            cat: {
+              oepnv: "Public Transport – Local services",
+              auto: "Car – Private vehicle",
+              bicycle: "Bicycle – Cyclists",
+              walking: "On foot – Pedestrians",
+            },
+          },
+          buildingRating: {
+            title: "Building Rating",
+            subtitle: "CO₂ emissions per person (monthly average)",
+            description: "This rating summarizes key building performance metrics. The score is derived from CO₂ emissions per person (monthly average).",
+            score: { low: "critical", medium: "medium", high: "good" },
+          },
+          emissions: {
+            title: "Emissions",
+            description: "shows the daily CO₂ emissions of the university in kilograms.",
+            dataSource: "Data source: Energy monitoring",
+            cat: {
+              all: "Total – All emission sources",
+              electricity: "Electricity – Power consumption",
+              heating: "Heating – Heat energy",
+              mobility: "Mobility – Business travel & commuting",
+            },
+          },
+          usage: {
+            title: "Consumption",
+            description: "Shows the monthly energy consumption of the university by energy carrier.",
+            months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          },
+          students: {
+            title: "Students",
+            description: "Records all currently enrolled students at the university",
+          },
+          employees: {
+            title: "Employees",
+            description: "Records all currently employed persons at the university, excluding professors and lecturers",
+          },
+          professors: {
+            title: "Professors",
+            description: "Records all currently employed professors and lecturers at the university",
+          },
+          goals: {
+            title: "Sustainability Goals",
+            completed: "(completed)",
+            description: "This card shows the open sustainability goals of Hochschule Mainz and serves as guidance for the respective years. If a goal is not achieved in the intended year, it will continue to be listed in the following years.",
+            items: {
+              "1": { title: "Reduce CO₂ Emissions", detail: "Reduce location-based emissions per capita" },
+              "2": { title: "Increase Renewable Energy", detail: "Raise the share of renewables in the electricity mix" },
+              "3": { title: "Reduce Waste", detail: "Lower residual waste through better sorting and avoidance" },
+              "4": { title: "More Sustainable Canteen", detail: "More vegan/vegetarian options and a lower CO₂ footprint" },
+            },
+          },
+          trash: {
+            title: "Waste",
+            description: "Shows the weekly distribution of waste generated at Hochschule Mainz by waste category.",
+          },
+          mensa: {
+            title: "CO₂ per Meal Type",
+            description: "Shows CO₂ output per meal category arising from production, processing and delivery. Values cover the total quantity of meals prepared per day.",
+          },
+          learningPlace: {
+            title: "Study Place",
+            consultations: "Number of teaching consultations",
+            selfStudy: "Number of self-study places",
+            research: "Number of research projects",
+            workingStudents: "Number of working students",
+            satisfaction: "Student satisfaction",
+            description: "This card shows the sustainability goals of the university and serves as guidance for the coming years.",
+          },
+          electricityMix: {
+            title: "Electricity Mix",
+            description: "Shows the percentage share of each energy source in the electricity that Hochschule Mainz receives per year.",
+          },
+          staff: {
+            title: "Staff",
+            description: "Shows staff development by gender and department.",
+          },
+          studentsDepartment: {
+            title: "Students – Departments",
+            description: "Shows the number of students per department, broken down by gender.",
+          },
+          heatMix: {
+            title: "Heat Mix",
+            description: "Shows the percentage share of each energy source in the heat supply that Hochschule Mainz receives per year.",
+          },
+          mealPlan: {
+            title: "Meal Plan",
+            error: "Error loading the meal plan.",
+            noMenu: "No meal plan available for this day.",
+            back: {
+              description: "Always displays the current week's meal plan from Studierendenwerk Mainz, located on campus at Lucy-Hillebrandt-Straße 2 at Hochschule Mainz.",
+              co2Label: "CO² Rating",
+              co2Good: "0 – 799 g · climate-friendly",
+              co2Medium: "800 – 1300 g · moderate",
+              co2Bad: "over 1300 g · high emissions",
+              allergenLabel: "Allergens",
+            },
+          },
+          airQuality: {
+            title: "Air Quality",
+            back: {
+              description: "Shows current air quality readings from the last 24 hours.",
+              thresholdLabel: "Thresholds",
+              good: "good",
+              medium: "moderate",
+              bad: "poor",
+              temperature: "Temperature — ideal range 20–24 °C",
+              moisture: "Humidity — ideal range 40–60 %",
+              co2: "CO₂ in ppm — under 800",
+              co2Range: "800–1400",
+              co2Bad: "over 1400",
+              pm25: "PM2.5 in µg/m³ — under 12",
+              pm25Range: "12–35",
+              pm25Bad: "over 35",
+              pm10: "PM10 in µg/m³ — under 54",
+              pm10Range: "54–154",
+              pm10Bad: "over 154",
+              voc: "VOC in ppb — under 250",
+              vocRange: "250–500",
+              vocBad: "over 500",
+            },
+          },
+          energySources: {
+            solar: "Solar",
+            wind: "Wind",
+            hydro: "Hydropower",
+            biomass: "Biomass",
+            naturalGas: "Natural Gas",
+            coal: "Coal",
+            wasteChp: "Waste CHP",
+            sewageSludge: "Sewage\u00A0Sludge",
+            heatPump: "Heat Pump",
+            gasChp: "Gas CHP",
+          },
+          mealTypes: {
+            meat: "Meat",
+            vegetarian: "Vegetarian",
+            vegan: "Vegan",
+          },
+          genderLabels: {
+            male: "Male",
+            female: "Female",
+            diverse: "Diverse",
+          },
+          wasteCategories: {
+            paper: "Paper",
+            residual: "Residual Waste",
+            organic: "Organic Waste",
+            recyclable: "Recyclables",
+          },
+        },
+      },
     },
-    en: {
-      translation: {
-        "Anreise": "Commute"
-      }
-    },
-  },
-  lng: "de",
-  fallbackLng: "de",
-  interpolation: {
-    escapeValue: false, // ← muss in interpolation rein
-  },
-  react: {
-    useSuspense: false,
-  }
-});
+  });
 
-export default i18n;
+export default i18next;

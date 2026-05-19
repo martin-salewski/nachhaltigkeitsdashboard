@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChartRadialText } from "../ui/radialchart";
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { useTranslation } from "react-i18next";
 
 interface BuildingRatingRecord {
   year: number
@@ -18,8 +19,8 @@ async function fetchBuildingRatingRecord(score?: number): Promise<BuildingRating
   if (score) params.set("score", String(score));
 
   const queryString = params.toString();
-  const url = `http://localhost:3000/api/building_rating${queryString ? `?${queryString}` : ""}`;  
-  
+  const url = `http://localhost:3000/api/building_rating${queryString ? `?${queryString}` : ""}`;
+
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch building rating");
   return res.json();
@@ -27,6 +28,7 @@ async function fetchBuildingRatingRecord(score?: number): Promise<BuildingRating
 
 
 export function BuildingRatingCard() {
+  const { t } = useTranslation();
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -36,7 +38,7 @@ export function BuildingRatingCard() {
   const [score, setScore] = useState<number | undefined>(undefined);
   const { data, isFetching, isPending } = useQuery({
     queryKey: ["building_rating", score],
-    queryFn: () => fetchBuildingRatingRecord(score), 
+    queryFn: () => fetchBuildingRatingRecord(score),
   });
 
 
@@ -107,13 +109,13 @@ export function BuildingRatingCard() {
         <div
           ref={frontRef}
           style={{ backfaceVisibility: "hidden" }}
-          className="backface-hidden"
+          className="backface-hidden h-full w-full"
         >
           <Card className="relative h-full w-full pb-4">
             <CardHeader className="">
               <CardTitle>
                 <h1 className="title mt-2">
-                  Gesamtbewertung des Gebäudes
+                  {t("buildingRating.title")}
                 </h1>
                 <Separator className="bg-black/10 h-2" />
               </CardTitle>
@@ -121,13 +123,13 @@ export function BuildingRatingCard() {
 
             <CardContent>
               <p className="text-xs text-black/50 mb-3">
-                CO₂-Emissionen des Gebäudes pro Person im Monatsdurchschnitt
+                {t("buildingRating.subtitle")}
               </p>
 
               {isPending || isPending ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
-                    Laden...
+                    {t("loading")}
                   </div>
                 </div>
               ) : (
@@ -145,7 +147,7 @@ export function BuildingRatingCard() {
 
               {isFetching && !(isPending || isPending) ? (
                 <p className="mt-3 text-[10px] text-muted-foreground">
-                  Aktualisiere…
+                  {t("updating")}
                 </p>
               ) : null}
             </CardContent>
@@ -153,7 +155,7 @@ export function BuildingRatingCard() {
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Mehr Informationen"
             >
               <Info className="size-4" />
@@ -172,33 +174,31 @@ export function BuildingRatingCard() {
           }}
         >
           <Card className="relative h-full">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1">
               <CardTitle className="text-base font-medium text-foreground/90">
-                Über diese Karte
+                {t("cardBack.title")}
               </CardTitle>
             </CardHeader>
 
             <Separator className="mb-2 bg-black/10" />
 
-            <CardContent className="pt-2 text-sm text-muted-foreground space-y-3">
+            <CardContent className="pt-2 text-sm text-muted-foreground space-y-3 text-justify">
               <p>
-                Diese Bewertung fasst Kennzahlen zur Gebäude-Performance
-                zusammen. Der Score wird aus den CO₂-Emissionen pro Person
-                (Monatsdurchschnitt) abgeleitet.
+                {t("buildingRating.description")}
               </p>
 
               <div className="text-xs space-y-1">
                 <p>
                   <span className="font-medium text-foreground">0–30:</span>{" "}
-                  kritisch
+                  {t("buildingRating.score.low")}
                 </p>
                 <p>
                   <span className="font-medium text-foreground">31–70:</span>{" "}
-                  mittel
+                  {t("buildingRating.score.medium")}
                 </p>
                 <p>
                   <span className="font-medium text-foreground">71–100:</span>{" "}
-                  gut
+                  {t("buildingRating.score.high")}
                 </p>
               </div>
             </CardContent>
@@ -206,7 +206,7 @@ export function BuildingRatingCard() {
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück"
             >
               <X className="size-4" />

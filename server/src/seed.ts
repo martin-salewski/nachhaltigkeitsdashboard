@@ -5,6 +5,7 @@ import {
   buildingRating,
   peopleStats,
   studentDemographics,
+  studentDepartment,
   staffDemographics,
   sustainabilityGoals,
   energyMix,
@@ -15,6 +16,7 @@ import {
   mensaMealStats,
   mensaMenu,
   learningFacilities,
+  airQuality,
 } from './drizzle/schema.js'
 
 // Semester mapping: 1 = Wintersemester, 2 = Sommersemester
@@ -211,6 +213,8 @@ async function seed() {
     await tx.delete(mensaMealStats)
     await tx.delete(mensaMenu)
     await tx.delete(learningFacilities)
+    await tx.delete(studentDepartment)
+    await tx.delete(airQuality)
 
     // ============================================
     // COMMUTE DATA
@@ -325,58 +329,7 @@ async function seed() {
     }
     await tx.insert(peopleStats).values(peopleStatsData)
 
-    // ============================================
-    // STUDENT DEMOGRAPHICS (yearly)
-    // ============================================
-    const studentDemographicsData: StudentDemographicsRecord[] = []
-    const qualifications = ['Allgemeine Hochschulreife', 'Fachhochschulreife', 'Berufliche Qualifikation']
-    const genders = ['männlich', 'weiblich', 'divers']
 
-    for (const year of [2024, 2025]) {
-      const total = year === 2025 ? 9200 : 9000
-      const qualWeights = [0.62, 0.33, 0.05]
-      const genderWeights = [0.48, 0.51, 0.01]
-
-      for (let qi = 0; qi < qualifications.length; qi++) {
-        for (let gi = 0; gi < genders.length; gi++) {
-          const jitter = 0.9 + Math.random() * 0.2
-          const count = Math.round(total * qualWeights[qi] * genderWeights[gi] * jitter)
-          studentDemographicsData.push({
-            year,
-            qualification: qualifications[qi],
-            gender: genders[gi],
-            count,
-          })
-        }
-      }
-    }
-    await tx.insert(studentDemographics).values(studentDemographicsData)
-
-    // ============================================
-    // STAFF DEMOGRAPHICS (yearly)
-    // ============================================
-    const staffDemographicsData: StaffDemographicsRecord[] = []
-    const departments = ['Fachbereich Wirtschaft', 'Technik', 'Gestaltung', 'Zentrale Verwaltung & Services']
-
-    for (const year of [2024, 2025]) {
-      const totalStaff = year === 2025 ? 780 : 750
-      const deptWeights = [0.28, 0.27, 0.2, 0.25]
-      const genderWeights = [0.46, 0.53, 0.01]
-
-      for (let di = 0; di < departments.length; di++) {
-        for (let gi = 0; gi < genders.length; gi++) {
-          const jitter = 0.9 + Math.random() * 0.2
-          const count = Math.round(totalStaff * deptWeights[di] * genderWeights[gi] * jitter)
-          staffDemographicsData.push({
-            year,
-            department: departments[di],
-            gender: genders[gi],
-            count,
-          })
-        }
-      }
-    }
-    await tx.insert(staffDemographics).values(staffDemographicsData)
 
     // ============================================
     // SUSTAINABILITY GOALS
@@ -448,8 +401,7 @@ async function seed() {
     }[] = []
 
     for (const year of [2024, 2025]) {
-      const maxMonth = year === 2025 ? 6 : 12
-      for (let month = 1; month <= maxMonth; month++) {
+      for (let month = 1; month <= 12; month++) {
         energyConsumptionRows.push(...generateMonthlyEnergyConsumption(year, month))
       }
     }
@@ -619,14 +571,81 @@ async function seed() {
     await tx.insert(learningFacilities).values(learningRows)
 
     // ============================================
+    // STUDENT DEMOGRAPHICS
+    // ============================================
+    const qualifications = ['Allgemeine Hochschulreife', 'Fachhochschulreife', 'Berufliche Qualifikation']
+    const genders = ['männlich', 'weiblich', 'divers']
+    const studentDemographicsRows: { year: number; qualification: string; gender: string; count: number }[] = []
+
+    for (const year of [2023, 2024, 2025]) {
+      for (const qualification of qualifications) {
+        const base = qualification === 'Allgemeine Hochschulreife' ? 2800 : qualification === 'Fachhochschulreife' ? 1600 : 400
+        for (const gender of genders) {
+          const genderFactor = gender === 'männlich' ? 0.52 : gender === 'weiblich' ? 0.46 : 0.02
+          studentDemographicsRows.push({ year, qualification, gender, count: Math.round(base * genderFactor * (0.95 + Math.random() * 0.1)) })
+        }
+      }
+    }
+
+    await tx.insert(studentDemographics).values(studentDemographicsRows)
+
+    // ============================================
+    // STAFF DEMOGRAPHICS
+    // ============================================
+    const departments = ['Fachbereich Wirtschaft', 'Technik', 'Gestaltung', 'Zentrale Verwaltung & Services']
+    const staffDemographicsRows: { year: number; department: string; gender: string; count: number }[] = []
+
+    for (const year of [2023, 2024, 2025]) {
+      for (const department of departments) {
+        const base = department === 'Zentrale Verwaltung & Services' ? 80 : department === 'Fachbereich Wirtschaft' ? 60 : 45
+        for (const gender of genders) {
+          const genderFactor = gender === 'männlich' ? 0.50 : gender === 'weiblich' ? 0.48 : 0.02
+          staffDemographicsRows.push({ year, department, gender, count: Math.round(base * genderFactor * (0.95 + Math.random() * 0.1)) })
+        }
+      }
+    }
+
+    await tx.insert(staffDemographics).values(staffDemographicsRows)
+
+    // ============================================
+    // STUDENT DEPARTMENT
+    // ============================================
+    const studentDepartments = [
+      'Fachbereich Wirtschaft',
+      'Technik',
+      'Gestaltung',
+      'Architektur & Bauingenieurwesen',
+    ]
+    const studentDepartmentRows: { year: number; department: string; gender: string; count: number }[] = []
+
+    for (const year of [2023, 2024, 2025]) {
+      for (const department of studentDepartments) {
+        const base =
+          department === 'Fachbereich Wirtschaft' ? 1800
+          : department === 'Technik' ? 2200
+          : department === 'Gestaltung' ? 900
+          : 1100
+        for (const gender of genders) {
+          const genderFactor = gender === 'männlich' ? 0.54 : gender === 'weiblich' ? 0.44 : 0.02
+          studentDepartmentRows.push({
+            year,
+            department,
+            gender,
+            count: Math.round(base * genderFactor * (0.95 + Math.random() * 0.1)),
+          })
+        }
+      }
+    }
+
+    await tx.insert(studentDepartment).values(studentDepartmentRows)
+
+    // ============================================
     // LOG SUMMARY (inside transaction is fine)
     // ============================================
     console.log(`✅ Inserted ${commuteData.length} commute stats records`)
     console.log(`✅ Inserted ${emissionsData.length} emissions records`)
     console.log(`✅ Inserted ${buildingRatingData.length} building rating records`)
     console.log(`✅ Inserted ${peopleStatsData.length} people stats records`)
-    console.log(`✅ Inserted ${studentDemographicsData.length} student demographics records`)
-    console.log(`✅ Inserted ${staffDemographicsData.length} staff demographics records`)
     console.log(`✅ Inserted sustainability goals`)
     console.log(`✅ Inserted ${energyMixRows.length} energy mix records`)
     console.log(`✅ Inserted ${energyConsumptionRows.length} energy consumption records`)
@@ -636,6 +655,32 @@ async function seed() {
     console.log(`✅ Inserted ${mensaStatsRows.length} mensa meal stats records`)
     console.log(`✅ Inserted ${mensaMenuRows.length} mensa menu records`)
     console.log(`✅ Inserted ${learningRows.length} learning facilities records`)
+    console.log(`✅ Inserted ${studentDemographicsRows.length} student demographics records`)
+    console.log(`✅ Inserted ${staffDemographicsRows.length} staff demographics records`)
+    console.log(`✅ Inserted ${studentDepartmentRows.length} student department records`)
+
+    // ============================================
+    // AIR QUALITY (every 30 min for last 48h)
+    // ============================================
+    const airQualityRows: { timestamp: string; temperature: number; co2: number; moisture: number; voc: number }[] = []
+    const now = new Date('2026-04-19T16:00:00')
+    for (let i = 95; i >= 0; i--) {
+      const ts = new Date(now.getTime() - i * 30 * 60 * 1000)
+      const hour = ts.getHours()
+      // Tagesrhythmus: morgens CO2 steigt, nachts sinkt
+      const dayFactor = Math.sin((hour - 6) * Math.PI / 12) * 0.5 + 0.5 // 0–1
+      airQualityRows.push({
+        timestamp: ts.toISOString().slice(0, 16),
+        temperature: Math.round((22 + dayFactor * 5.5 + (Math.random() - 0.5) * 1.2) * 10) / 10,
+        co2: Math.round(420 + dayFactor * 380 + (Math.random() - 0.5) * 60),
+        moisture: Math.round((55 + (1 - dayFactor) * 8 + (Math.random() - 0.5) * 4) * 10) / 10,
+        voc: Math.round(80 + dayFactor * 320 + (Math.random() - 0.5) * 50),
+        pm25: Math.round((4 + dayFactor * 18 + (Math.random() - 0.5) * 3) * 10) / 10,
+        pm10: Math.round((10 + dayFactor * 35 + (Math.random() - 0.5) * 6) * 10) / 10,
+      })
+    }
+    await tx.insert(airQuality).values(airQualityRows)
+    console.log(`✅ Inserted ${airQualityRows.length} air quality records`)
   })
 
   console.log('🎉 Seeding complete!')

@@ -14,17 +14,37 @@
   "dependencies": {
     "@hono/node-server": "^1.19.6",
     "@libsql/client": "^0.15.15",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
+    "express": "^5.2.1",
     "fast-xml-parser": "^5.4.2",
+    "handlebars": "^4.7.9",
     "hono": "^4.11.3",
-    "node-cron": "^4.2.1"
+    "jsonwebtoken": "^9.0.3",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.5",
+    "pdfjs-dist": "^5.5.207",
+    "pg": "^8.20.0",
+    "playwright": "^1.58.2",
+    "puppeteer": "^24.40.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.17",
     "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^8.0.0",
+    "@types/puppeteer": "^5.4.7",
     "drizzle-kit": "^0.31.8",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3"
-  }
+  },
+  "version": "1.0.0",
+  "description": "```\r npm install\r npm run dev\r ```",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

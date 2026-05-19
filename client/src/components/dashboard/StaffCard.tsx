@@ -14,13 +14,14 @@ import { ChartBarStacked } from "../ui/stackedbarchart_personnel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Info, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface StaffData {
-    month: number;
-    gender: string,
-    count: number,
-    department: string,
-  }
+  month: number;
+  gender: string;
+  count: number;
+  department: string;
+}
 
 async function FetchStaffDemographics(
   year?: number,
@@ -28,7 +29,6 @@ async function FetchStaffDemographics(
   count?: number,
   department?: string,
 ): Promise<StaffData[]> {
- 
   const params = new URLSearchParams();
   if (year) params.set("year", year.toString());
   if (gender) params.set("gender", gender.toString());
@@ -50,24 +50,24 @@ async function FetchAvailableYears(): Promise<number[]> {
 
 
 function StaffCard() {
-  const [year, setYear] = useState<number | undefined>(undefined)
-  
+  const { t } = useTranslation();
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+
   const { data } = useQuery({
     queryKey: ["staff Demographics", year],
-    queryFn: ()=> FetchStaffDemographics (year),
+    queryFn: () => FetchStaffDemographics(year),
   });
 
   const { data: availableYears } = useQuery({
     queryKey: ["staff-years"],
     queryFn: FetchAvailableYears,
   });
+
   useEffect(() => {
-    if (availableYears && availableYears.length > 0 && year === undefined) {
-      setYear(availableYears[0]);
+    if (availableYears && availableYears.length > 0 && !availableYears.includes(year)) {
+      setYear(availableYears[availableYears.length - 1]);
     }
   }, [availableYears]);
-
-  const heading = "Personal";
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -83,12 +83,7 @@ function StaffCard() {
   }, []);
 
   const flipCard = useCallback(() => {
-    if (
-      isAnimating ||
-      !cardRef.current ||
-      !frontRef.current ||
-      !backRef.current
-    )
+    if (isAnimating || !cardRef.current || !frontRef.current || !backRef.current)
       return;
 
     setIsAnimating(true);
@@ -104,11 +99,7 @@ function StaffCard() {
       tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(frontRef.current, { visibility: "hidden" })
         .set(backRef.current, { visibility: "visible" })
-        .to(cardRef.current, {
-          rotateY: 180,
-          duration: 0.3,
-          ease: "power2.out",
-        });
+        .to(cardRef.current, { rotateY: 180, duration: 0.3, ease: "power2.out" });
     } else {
       tl.to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
         .set(backRef.current, { visibility: "hidden" })
@@ -119,7 +110,6 @@ function StaffCard() {
 
 
   return (
-    
     <div className="relative h-full w-full" style={{ perspective: 1000 }}>
       <div
         ref={cardRef}
@@ -131,9 +121,7 @@ function StaffCard() {
           <Card className="relative bg-white w-full h-full flex flex-col">
             <CardHeader>
               <CardTitle>
-                <h1 className="title">
-                  {heading}
-                </h1>
+                <h1 className="title">{t("staff.title")}</h1>
               </CardTitle>
             </CardHeader>
 
@@ -141,38 +129,38 @@ function StaffCard() {
               <Separator className="bg-black/10 h-2" />
 
               <div className="flex justify-end items-end mt-2">
-              <Select
-  value={year ? String(year) : undefined}
-  onValueChange={(val) => setYear(Number(val))}
->
+                <Select
+                  value={year ? String(year) : undefined}
+                  onValueChange={(val) => setYear(Number(val))}
+                >
                   <SelectTrigger className="selector">
-                    <SelectValue placeholder="Jahr" />
+                    <SelectValue placeholder={t("year")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                    <SelectLabel>Jahr</SelectLabel>
-                       {availableYears?.map((y) => (
-                       <SelectItem key={y} value={String(y)}>
-                         {y}
-                         </SelectItem>
-      ))}
+                      <SelectLabel>{t("year")}</SelectLabel>
+                      {availableYears?.map((y) => (
+                        <SelectItem key={y} value={String(y)}>
+                          {y}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex-1 min-h-0 w-full mt-2">
-        <ChartBarStacked data={data ?? []}/>
-      </div>
+                <ChartBarStacked data={data ?? []} />
+              </div>
             </CardContent>
 
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Mehr Informationen"
             >
-               <Info className="size-4" />
+              <Info className="size-4" />
             </button>
           </Card>
         </div>
@@ -181,16 +169,13 @@ function StaffCard() {
         <div
           ref={backRef}
           className="absolute inset-0 h-full w-full"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-          }}
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <Card className="relative bg-white w-full h-full">
             <CardHeader>
               <CardTitle>
                 <h1 className="font-bold opacity-60 flex flex-start text-lg font-['SimStd']">
-                  Über diese Karte
+                  {t("cardBack.title")}
                 </h1>
               </CardTitle>
             </CardHeader>
@@ -198,14 +183,14 @@ function StaffCard() {
             <CardContent>
               <Separator className="bg-black/10 h-2" />
               <div className="mt-3 text-sm text-muted-foreground space-y-2">
-                <p>blabla</p>
+                <p>{t("staff.description")}</p>
               </div>
             </CardContent>
 
             <button
               onClick={flipCard}
               disabled={isAnimating}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück"
             >
               <X />

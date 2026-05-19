@@ -25,7 +25,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Info, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
-/* import { useTranslation } from "react-i18next"; */
+import { useTranslation } from "react-i18next";
 
 interface CommuteData {
   id: number;
@@ -41,6 +41,7 @@ interface Period {
   semester: number;
   label: string;
 }
+
 
 // Color mapping for transport modes
 const MODE_COLORS: Record<string, string> = {
@@ -98,7 +99,8 @@ async function fetchPeriods(): Promise<Period[]> {
 }
 
 export function AnreiseCard() {
-  /* const { t } = useTranslation(); */
+  const { t } = useTranslation();
+
   const [selectedCategory, setSelectedCategory] = useState<string>("gesamt");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [isFlipped, setIsFlipped] = useState(false);
@@ -236,7 +238,7 @@ export function AnreiseCard() {
           <Card className="relative h-full w-full" data-card-id="travel">
             <CardHeader className="">
               <CardTitle className="flex flex-col gap-2">
-                <h1 className="title">{("Anreise")}</h1>
+                <h1 className="title">{t("commute.title")}</h1>
                 <Separator className="bg-black/10 h-2" />
                 <div className="flex gap-2 w-full justify-end">
                   <Select
@@ -250,9 +252,9 @@ export function AnreiseCard() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gesamt">gesamt</SelectItem>
-                      <SelectItem value="studierende">Studierende</SelectItem>
-                      <SelectItem value="mitarbeiter">Mitarbeiter</SelectItem>
+                      <SelectItem value="gesamt">{t("filter.all")}</SelectItem>
+                      <SelectItem value="studierende">{t("filter.students")}</SelectItem>
+                      <SelectItem value="mitarbeiter">{t("filter.employees")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select
@@ -263,7 +265,7 @@ export function AnreiseCard() {
                       size="sm"
                       className="h-5 text-[10px] w-auto text-black/60 border-black/10 [&_svg]:text-black/60"
                     >
-                      <SelectValue placeholder="Semester" />
+                      <SelectValue placeholder={t("semester")} />
                     </SelectTrigger>
                     <SelectContent>
                       {periods.map((period) => (
@@ -283,12 +285,12 @@ export function AnreiseCard() {
               {isLoading ? (
                 <div className="flex items-center justify-center h-full w-full">
                   <div className="animate-pulse text-muted-foreground text-sm">
-                    Laden...
+                    {t("loading")}
                   </div>
                 </div>
               ) : chartData.length === 0 ? (
                 <div className="flex items-center justify-center h-full w-full text-muted-foreground text-sm">
-                  Keine Daten verfügbar
+                  {t("noData")}
                 </div>
               ) : (
                 <ChartContainer
@@ -336,7 +338,7 @@ export function AnreiseCard() {
                         <ChartTooltipContent
                           hideLabel
                           formatter={(value) => [
-                            `${Number(value).toLocaleString("de-DE")} Personen`,
+                            `${Number(value).toLocaleString("de-DE")} ${t("persons")}`,
                             "",
                           ]}
                         />
@@ -362,7 +364,7 @@ export function AnreiseCard() {
             {/* Info icon */}
             <button
               onClick={flipCard}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 cursor-pointer"
               aria-label="Mehr Informationen"
             >
               <Info className="size-4" />
@@ -381,49 +383,47 @@ export function AnreiseCard() {
           }}
         >
           <Card className="relative h-full w-full">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1">
               <CardTitle className="text-base font-medium text-foreground/90">
-                Über diese Karte
+                {t("cardBack.title")}
               </CardTitle>
             </CardHeader>
             <Separator className="mb-2" />
             <CardContent className="pt-2 overflow-hidden">
-              <div className="space-y-4 text-sm text-muted-foreground">
+              <div className="space-y-4 text-sm text-muted-foreground text-justify">
                 <p>
-                  <strong className="text-foreground text">Anreise</strong> zeigt die
-                  Verteilung der Verkehrsmittel, mit denen Studierende und
-                  Mitarbeitende zur Hochschule kommen.
+                  <strong className="text-foreground text">{t("commute.title")}</strong> {t("commute.description")}
                 </p>
                 <div className="space-y-2">
-                  <h4 className="font-medium text-foreground">Kategorien:</h4>
+                  <h4 className="font-medium text-foreground">{t("categories")}</h4>
                   <ul className="space-y-1 text-xs">
                     <li className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-sm bg-[#1D3A6A]" />
-                      <span>ÖPNV – Öffentlicher Nahverkehr</span>
+                      <span>{t("commute.cat.oepnv")}</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-sm bg-[#2B76BB]" />
-                      <span>Auto – PKW-Nutzung</span>
+                      <span>{t("commute.cat.auto")}</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-sm bg-[#4DBAF7]" />
-                      <span>Fahrrad – Radfahrer</span>
+                      <span>{t("commute.cat.bicycle")}</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-sm bg-[#7DB8FF]" />
-                      <span>zu Fuß – Fußgänger</span>
+                      <span>{t("commute.cat.walking")}</span>
                     </li>
                   </ul>
                 </div>
                 <p className="text-xs">
-                  Datenquelle: Mobilitätsbefragung {selectedPeriodLabel}
+                  {t("commute.dataSource")} {selectedPeriodLabel}
                 </p>
               </div>
             </CardContent>
             {/* Close icon */}
             <button
               onClick={flipCard}
-              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10"
+              className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 cursor-pointer"
               aria-label="Zurück zur Ansicht"
             >
               <X className="size-4" />
