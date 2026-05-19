@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CheckCircle, Circle, Plus, LogOut, Trash2, UserPlus, PlusCircle, MinusCircle, LayoutDashboard } from "lucide-react";
 import { isAdmin, getTokenPayload } from "@/utils/auth";
 
-const API = "http://localhost:3000";
+const API = "";
 
 function authHeader(): Record<string, string> {
   const token = sessionStorage.getItem("auth_token");

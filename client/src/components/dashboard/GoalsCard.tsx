@@ -19,7 +19,7 @@ interface SustainabilityGoal {
 }
 
 async function fetchGoals(): Promise<SustainabilityGoal[]> {
-  const res = await fetch("http://localhost:3000/api/sustainability_goals");
+  const res = await fetch("/api/sustainability_goals");
   if (!res.ok) throw new Error("Failed to fetch sustainability goals");
   return res.json();
 }

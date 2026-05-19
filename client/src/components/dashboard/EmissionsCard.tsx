@@ -57,7 +57,7 @@ async function fetchEmissions(
   if (month) params.set("month", month.toString());
   if (category) params.set("category", category);
 
-  const url = `http://localhost:3000/api/emissions${
+  const url = `/api/emissions${
     params.toString() ? `?${params}` : ""
   }`;
   const res = await fetch(url);
@@ -66,7 +66,7 @@ async function fetchEmissions(
 }
 
 async function fetchPeriods(): Promise<Period[]> {
-  const res = await fetch("http://localhost:3000/api/emissions/periods");
+  const res = await fetch("/api/emissions/periods");
   if (!res.ok) throw new Error("Failed to fetch periods");
   return res.json();
 }

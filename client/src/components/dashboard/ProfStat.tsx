@@ -16,7 +16,7 @@ interface PeopleStatsRecord {
 }
 
 async function fetchPeopleStatsRecord(): Promise<PeopleStatsRecord[]> {
-  const url = "http://localhost:3000/api/people_stats?latest=2";
+  const url = "/api/people_stats?latest=2";
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch people stats");
   return res.json();

@@ -19,7 +19,7 @@ async function fetchBuildingRatingRecord(score?: number): Promise<BuildingRating
   if (score) params.set("score", String(score));
 
   const queryString = params.toString();
-  const url = `http://localhost:3000/api/building_rating${queryString ? `?${queryString}` : ""}`;
+  const url = `/api/building_rating${queryString ? `?${queryString}` : ""}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch building rating");

@@ -29,7 +29,7 @@ const SOURCE_I18N: Record<string, string> = {
 };
 
 async function fetchHeatingMix(): Promise<HeatingMixRow[]> {
-  const res = await fetch("http://localhost:3000/api/heating_mix");
+  const res = await fetch("/api/heating_mix");
   if (!res.ok) throw new Error("Failed to fetch heating mix");
   return res.json();
 }

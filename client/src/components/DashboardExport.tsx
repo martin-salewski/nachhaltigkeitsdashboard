@@ -17,7 +17,7 @@ export const DashboardExport = ({ currentData }: { currentData: any }) => {
     };
 
     // 2. Den API-Call machen
-    const response = await fetch('http://localhost:3000/api/export-pdf', {
+    const response = await fetch('/api/export-pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(exportData),

@@ -17,7 +17,7 @@ interface MensaMenuItem {
 }
 
 async function fetchMensaMenu(date: string): Promise<MensaMenuItem[]> {
-  const res = await fetch(`http://localhost:3000/api/mensa_menu?date=${date}`);
+  const res = await fetch(`/api/mensa_menu?date=${date}`);
   if (!res.ok) throw new Error("Failed to fetch mensa menu");
   return res.json();
 }

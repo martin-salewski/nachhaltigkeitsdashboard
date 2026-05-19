@@ -29,7 +29,7 @@ const SOURCE_I18N: Record<string, string> = {
 };
 
 async function fetchEnergyMix(): Promise<EnergyMixRow[]> {
-  const res = await fetch("http://localhost:3000/api/energy_mix");
+  const res = await fetch("/api/energy_mix");
   if (!res.ok) throw new Error("Failed to fetch energy mix");
   return res.json();
 }

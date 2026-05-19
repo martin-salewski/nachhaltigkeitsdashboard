@@ -17,7 +17,7 @@ interface FossilFuelRow {
 }
 
 async function fetchFossilFuels(): Promise<FossilFuelRow[]> {
-  const res = await fetch("http://localhost:3000/api/fossil_fuels");
+  const res = await fetch("/api/fossil_fuels");
   if (!res.ok) throw new Error("Failed to fetch fossil fuels");
   return res.json();
 }

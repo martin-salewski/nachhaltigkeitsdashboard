@@ -37,9 +37,24 @@ const app = new Hono()
 
 /* app.use('/api', exportRoutes); */
 // Enable CORS for frontend
-app.use('/*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
-}))
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : ['http://localhost:5173', 'http://localhost:5174']
+app.use('/*', cors({ origin: allowedOrigins }))
+
+// Simple in-memory rate limiter for login endpoint
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+function checkLoginRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = loginAttempts.get(ip)
+  if (!entry || entry.resetAt < now) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 })
+    return true
+  }
+  if (entry.count >= 10) return false
+  entry.count++
+  return true
+}
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
@@ -198,13 +213,15 @@ app.get('/api/student_demographics', async (c) => {
 })
 
 app.post('/api/student_demographics', async (c) => {
-  const body = await c.req.json(); 
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const body = await c.req.json();
   const result = await db.insert(studentDemographics).values(body);
 
   return c.json({ success: true, message: 'Daten gespeichert!' });
 });
 
 app.put('/api/student_demographics/:id', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const id = Number(c.req.param('id'));
   const body = await c.req.json();
   
@@ -223,6 +240,7 @@ app.put('/api/student_demographics/:id', async (c) => {
 });
 
 app.post('/api/staff_demographics', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const body = await c.req.json();
   const result = await db.insert(staffDemographics).values(body);
 
@@ -230,9 +248,10 @@ app.post('/api/staff_demographics', async (c) => {
 });
 
 app.put('/api/staff_demographics/:id', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const id = Number(c.req.param('id'));
   const body = await c.req.json();
-  
+
   const result = await db
     .update(staffDemographics)
     .set({
@@ -248,12 +267,14 @@ app.put('/api/staff_demographics/:id', async (c) => {
 });
 
 app.post('/api/people_stats', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const body = await c.req.json()
   const result = await db.insert(peopleStats).values(body);
   return c.json ({sucess: true, message:'Daten gespeichert!'})
 });
 
 app.put('/api/people_stats/:id', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const id = Number(c.req.param('id'));
   const body = await c.req.json();
   
@@ -308,6 +329,7 @@ app.get('/api/sustainability_goals', async (c) => {
 // POST /api/sustainability_goals
 app.post('/api/sustainability_goals', async (c) => {
   const user = requireAuth(c)
+  if (!user) return c.json({ error: 'Unauthorized' }, 401)
   const body = await c.req.json()
   const { title, description, targetYear, targetValue } = body as {
     title: string
@@ -335,6 +357,7 @@ app.post('/api/sustainability_goals', async (c) => {
 
 // PATCH /api/sustainability_goals/:id/toggle
 app.patch('/api/sustainability_goals/:id/toggle', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const id = parseInt(c.req.param('id'))
   const [current] = await db.select().from(sustainabilityGoals).where(eq(sustainabilityGoals.id, id))
   if (!current) return c.json({ error: 'Not found' }, 404)
@@ -512,6 +535,9 @@ app.get("/api/mensa_menu", async (c) => {
 
 // POST /api/login
 app.post('/api/login', async (c) => {
+  const ip = c.req.header('x-forwarded-for')?.split(',')[0].trim() ?? c.req.header('x-real-ip') ?? 'unknown'
+  if (!checkLoginRateLimit(ip)) return c.json({ success: false, message: 'Zu viele Anmeldeversuche. Bitte warte 15 Minuten.' }, 429)
+
   const body = await c.req.json().catch(() => ({}))
   const { username, password } = body as { username?: string; password?: string }
 
@@ -591,6 +617,7 @@ app.delete('/api/admin/users/:id', async (c) => {
 app.post('/api/auth/accept-invite', async (c) => {
   const { token, password } = await c.req.json()
   if (!token || !password) return c.json({ message: 'Token und Passwort erforderlich' }, 400)
+  if (typeof password === 'string' && password.length < 8) return c.json({ message: 'Passwort muss mindestens 8 Zeichen lang sein' }, 400)
 
   const [user] = await db.select().from(users).where(eq(users.inviteToken, token))
   if (!user || !user.tokenExpiresAt || user.tokenExpiresAt < Math.floor(Date.now() / 1000)) {
@@ -624,6 +651,7 @@ app.post('/api/auth/forgot-password', async (c) => {
 app.post('/api/auth/reset-password', async (c) => {
   const { token, password } = await c.req.json()
   if (!token || !password) return c.json({ message: 'Token und Passwort erforderlich' }, 400)
+  if (typeof password === 'string' && password.length < 8) return c.json({ message: 'Passwort muss mindestens 8 Zeichen lang sein' }, 400)
 
   const [user] = await db.select().from(users).where(eq(users.resetToken, token))
   if (!user || !user.tokenExpiresAt || user.tokenExpiresAt < Math.floor(Date.now() / 1000)) {

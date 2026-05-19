@@ -27,7 +27,7 @@ function DownloadButton({ data }: DownloadButtonProps) {
 
     try {
       // 2. Request an dein echtes Backend (Port 3000)
-      const response = await fetch('http://localhost:3000/api/export-pdf', {
+      const response = await fetch('/api/export-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(exportData), // Jetzt schicken wir das korrekte Objekt!

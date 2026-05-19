@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: ./server
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - db_data:/data
+
+  frontend:
+    build:
+      context: ./client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

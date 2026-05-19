@@ -21,7 +21,7 @@ interface MensaMenuItem {
 }
 
 async function fetchMensaMenu(date: string): Promise<MensaMenuItem[]> {
-  const res = await fetch(`http://localhost:3000/api/mensa_menu?date=${date}`);
+  const res = await fetch(`/api/mensa_menu?date=${date}`);
   if (!res.ok) throw new Error("Fehler beim Laden des Speiseplans");
   return res.json();
 }
@@ -143,7 +143,7 @@ function MealPlanCard() {
   const { data: mealStats = [] } = useQuery({
     queryKey: ["mensa_meal_stats", dateString],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:3000/api/mensa_meal_stats?date=${dateString}`);
+      const res = await fetch(`/api/mensa_meal_stats?date=${dateString}`);
       if (!res.ok) throw new Error("Fehler beim Laden der Statistik");
       return res.json() as Promise<{ category: string; count: number }[]>;
     },

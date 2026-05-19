@@ -57,8 +57,8 @@ const chartConfig = {
 
 async function fetchWaste(year?: number): Promise<WasteRow[]> {
   const url = year
-    ? `http://localhost:3000/api/waste?year=${year}`
-    : `http://localhost:3000/api/waste`;
+    ? `/api/waste?year=${year}`
+    : `/api/waste`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch waste data");
   return res.json();

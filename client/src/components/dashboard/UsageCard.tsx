@@ -48,14 +48,14 @@ async function fetchEnergyConsumption(year?: number, type?: string): Promise<Ene
   const params = new URLSearchParams();
   if (year) params.set("year", year.toString());
   if (type) params.set("type", type);
-  const url = `http://localhost:3000/api/energy_consumption${params.toString() ? `?${params}` : ""}`;
+  const url = `/api/energy_consumption${params.toString() ? `?${params}` : ""}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch energy consumption");
   return res.json();
 }
 
 async function fetchYears(): Promise<{ year: number; month: number }[]> {
-  const res = await fetch("http://localhost:3000/api/energy_consumption/periods");
+  const res = await fetch("/api/energy_consumption/periods");
   if (!res.ok) throw new Error("Failed to fetch periods");
   return res.json();
 }

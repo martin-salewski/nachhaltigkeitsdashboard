@@ -27,14 +27,14 @@ export interface StudentDepartmentData {
 async function fetchStudentDepartment(year?: number): Promise<StudentDepartmentData[]> {
   const params = new URLSearchParams();
   if (year) params.set("year", year.toString());
-  const url = `http://localhost:3000/api/student_department${params.toString() ? `?${params}` : ""}`;
+  const url = `/api/student_department${params.toString() ? `?${params}` : ""}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch student department data");
   return res.json();
 }
 
 async function fetchAvailableYears(): Promise<number[]> {
-  const res = await fetch("http://localhost:3000/api/student_department/years");
+  const res = await fetch("/api/student_department/years");
   if (!res.ok) throw new Error("Failed to fetch years");
   return res.json();
 }

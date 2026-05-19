@@ -26,7 +26,7 @@ interface LearningFacilityRow {
 }
 
 async function fetchLearningFacilities(): Promise<LearningFacilityRow[]> {
-  const res = await fetch("http://localhost:3000/api/learning_facilities");
+  const res = await fetch("/api/learning_facilities");
   if (!res.ok) throw new Error("Failed to fetch learning facilities");
   return res.json();
 }

@@ -19,7 +19,7 @@ interface AirQualityRow {
 }
 
 async function fetchAirQuality(): Promise<AirQualityRow[]> {
-  const res = await fetch("http://localhost:3000/api/air_quality?limit=48");
+  const res = await fetch("/api/air_quality?limit=48");
   if (!res.ok) throw new Error("Failed to fetch air quality");
   return res.json();
 }

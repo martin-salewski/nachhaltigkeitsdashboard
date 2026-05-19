@@ -84,7 +84,7 @@ async function fetchCommuteStats(
   if (semester) params.set("semester", semester.toString());
   if (category) params.set("category", category);
 
-  const url = `http://localhost:3000/api/commute-stats${
+  const url = `/api/commute-stats${
     params.toString() ? `?${params}` : ""
   }`;
   const res = await fetch(url);
@@ -93,7 +93,7 @@ async function fetchCommuteStats(
 }
 
 async function fetchPeriods(): Promise<Period[]> {
-  const res = await fetch("http://localhost:3000/api/commute-stats/periods");
+  const res = await fetch("/api/commute-stats/periods");
   if (!res.ok) throw new Error("Failed to fetch periods");
   return res.json();
 }

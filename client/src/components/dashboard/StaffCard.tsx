@@ -34,7 +34,7 @@ async function FetchStaffDemographics(
   if (gender) params.set("gender", gender.toString());
   if (count) params.set("count", count.toString());
   if (department) params.set("department", department.toString());
-  const url = `http://localhost:3000/api/staff_demographics${
+  const url = `/api/staff_demographics${
     params.toString() ? `?${params}` : ""
   }`;
   const res = await fetch(url);
@@ -43,7 +43,7 @@ async function FetchStaffDemographics(
 }
 
 async function FetchAvailableYears(): Promise<number[]> {
-  const res = await fetch("http://localhost:3000/api/staff_demographics/years");
+  const res = await fetch("/api/staff_demographics/years");
   if (!res.ok) throw new Error("Failed to fetch years");
   return res.json();
 }
