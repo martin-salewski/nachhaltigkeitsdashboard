@@ -664,7 +664,7 @@ app.post('/api/auth/reset-password', async (c) => {
 })
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle/migrations') })
+await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') })
 console.log('[migrate] Migrations angewendet')
 
 serve({
