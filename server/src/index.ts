@@ -4,6 +4,9 @@ import { cors } from 'hono/cors'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
+import { migrate } from 'drizzle-orm/libsql/migrator'
+import { fileURLToPath } from 'url'
+import path from 'path'
 import { db } from './drizzle/db.js'
 import { sendInviteEmail, sendResetEmail } from './services/email.js'
 import { commuteStats,
@@ -659,6 +662,10 @@ app.post('/api/auth/reset-password', async (c) => {
   await db.update(users).set({ passwordHash, resetToken: null, tokenExpiresAt: null }).where(eq(users.id, user.id))
   return c.json({ success: true })
 })
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+await migrate(db, { migrationsFolder: path.join(__dirname, 'drizzle/migrations') })
+console.log('[migrate] Migrations angewendet')
 
 serve({
   fetch: app.fetch,
