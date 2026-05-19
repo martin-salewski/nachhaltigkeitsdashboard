@@ -29,9 +29,6 @@ import { eq, and, desc, asc } from 'drizzle-orm'
 import { runXmlImport } from './jobs/xmlImport.js'
 
 import { startScheduler } from './cron/scheduler.js'
-import exportRoutes from './routes/exportRoutes.js';
-
-
 const app = new Hono()
 
 
