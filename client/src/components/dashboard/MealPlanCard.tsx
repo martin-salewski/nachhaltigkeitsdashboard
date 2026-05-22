@@ -198,7 +198,7 @@ function MealPlanCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden h-full w-full"
         >
-          <Card className="w-full h-full bg-white rounded-lg border border-gray-300">
+          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 overflow-y-auto">
             <CardHeader>
               <CardTitle>
                 <h1 className="title">{t("mealPlan.title")}</h1>
@@ -218,7 +218,7 @@ function MealPlanCard() {
               {!isLoading && !isError && menu.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("mealPlan.noMenu")}</p>
               )}
-              <div className="overflow-y-auto max-h-48 pr-1">
+              <div>
                 {menu.map((item, index) => (
                   <div key={item.id}>
                     <div className="flex flex-row justify-between py-1.5">
