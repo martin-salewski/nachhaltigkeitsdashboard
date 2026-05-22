@@ -16,5 +16,14 @@ services:
     depends_on:
       - backend
 
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - backend
+
 volumes:
   db_data:
+  n8n_data:
