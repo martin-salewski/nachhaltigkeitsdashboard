@@ -198,7 +198,7 @@ function MealPlanCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden h-full w-full"
         >
-          <Card className="w-full h-full bg-white rounded-lg border border-gray-300">
+          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 flex flex-col">
             <CardHeader>
               <CardTitle>
                 <h1 className="title">{t("mealPlan.title")}</h1>
@@ -208,7 +208,7 @@ function MealPlanCard() {
                 <WeekSlider dayIndex={dayIndex} onChange={setDayIndex} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 min-h-0 flex flex-col overflow-hidden">
               {isLoading && (
                 <p className="text-sm text-muted-foreground">{t("loading")}</p>
               )}
@@ -218,36 +218,38 @@ function MealPlanCard() {
               {!isLoading && !isError && menu.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("mealPlan.noMenu")}</p>
               )}
-              {menu.map((item, index) => (
-                <div key={item.id}>
-                  <div className="flex flex-row justify-between py-1.5">
-                    <div className="max-w-100">
-                      <p className="font-[HelveticaNowText] font-normal text-xs text-black/80">
-                        {item.name}{" "}
-                        <span className="font-[HelveticaNowText] font-normal text-xs text-black/40">({item.allergens})</span>
-                        {" "}<CategoryIcon category={item.category} />
-                      </p>
+              <div className="overflow-y-auto flex-1 min-h-0 pr-1">
+                {menu.map((item, index) => (
+                  <div key={item.id}>
+                    <div className="flex flex-row justify-between py-1.5">
+                      <div className="max-w-100">
+                        <p className="font-[HelveticaNowText] font-normal text-xs text-black/80">
+                          {item.name}{" "}
+                          <span className="font-[HelveticaNowText] font-normal text-xs text-black/40">({item.allergens})</span>
+                          {" "}<CategoryIcon category={item.category} />
+                        </p>
+                      </div>
+                      <div className="flex flex-row shrink-0">
+                        <div className="flex flex-col items-end w-20">
+                          <p className="font-bold font-['SimStd'] text-xs tabular-nums">{formatPrice(item.priceStudent)}</p>
+                          <span className="font-[HelveticaNowText] text-[10px] text-black/40">Studiepreis</span>
+                        </div>
+                        <div className="flex flex-col items-end w-20">
+                          <p className="font-bold font-['SimStd'] text-xs tabular-nums">{formatPrice(item.priceStaff)}</p>
+                          <span className="font-[HelveticaNowText] text-[10px] text-black/40">nicht Studi</span>
+                        </div>
+                        <div className="flex flex-col items-end w-16">
+                          <p className={`font-bold font-['SimStd'] text-xs tabular-nums ${co2Color(item.co2Grams)}`}>{item.co2Grams} g</p>
+                          <span className="font-[HelveticaNowText] text-[10px] text-black/40">CO²</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-row shrink-0">
-                      <div className="flex flex-col items-end w-20">
-                        <p className="font-bold font-['SimStd'] text-xs tabular-nums">{formatPrice(item.priceStudent)}</p>
-                        <span className="font-[HelveticaNowText] text-[10px] text-black/40">Studiepreis</span>
-                      </div>
-                      <div className="flex flex-col items-end w-20">
-                        <p className="font-bold font-['SimStd'] text-xs tabular-nums">{formatPrice(item.priceStaff)}</p>
-                        <span className="font-[HelveticaNowText] text-[10px] text-black/40">nicht Studi</span>
-                      </div>
-                      <div className="flex flex-col items-end w-16">
-                        <p className={`font-bold font-['SimStd'] text-xs tabular-nums ${co2Color(item.co2Grams)}`}>{item.co2Grams} g</p>
-                        <span className="font-[HelveticaNowText] text-[10px] text-black/40">CO²</span>
-                      </div>
-                    </div>
+                    {index < menu.length - 1 && (
+                      <Separator className="w-full h-2 bg-black/10" />
+                    )}
                   </div>
-                  {index < menu.length - 1 && (
-                    <Separator className="w-full h-2 bg-black/10" />
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
               {mealStats.length > 0 && (
                 <>
                   <Separator className="w-full h-2 bg-black/10 mt-1" />
