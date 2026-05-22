@@ -54,10 +54,16 @@ export async function runXmlImport() {
     const rows = parsed?.DATAPACKET?.ROWDATA?.ROW ?? [];
     const data = Array.isArray(rows) ? rows : [rows];
 
-    // 3. Irrelevante Zeilen rausfiltern
-    const relevant = data.filter(
-      (row) => RELEVANT_TYPES.has(Number(row.TYP)) && row.AUSGABETEXT?.trim()
-    );
+    // 3. Irrelevante Zeilen rausfiltern und nach (date, name) deduplizieren
+    // TYP 102 (Eintopf) erscheint für beide Standorte mit identischem Namen
+    const seen = new Set<string>();
+    const relevant = data.filter((row) => {
+      if (!RELEVANT_TYPES.has(Number(row.TYP)) || !row.AUSGABETEXT?.trim()) return false;
+      const key = `${row.DATUM}|${row.AUSGABETEXT.trim().replace(/\([^)]*\)/g, "").trim()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     // 4. Zukünftige Einträge löschen, um Duplikate zu vermeiden
     const today = new Date().toISOString().split("T")[0];

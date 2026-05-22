@@ -216,7 +216,7 @@ function MealPlanCard() {
               {!isLoading && !isError && menu.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("mealPlan.noMenu")}</p>
               )}
-              <div>
+              <div className="mt-3">
                 {menu.map((item, index) => (
                   <div key={item.id}>
                     <div className="flex flex-row justify-between py-1.5">
