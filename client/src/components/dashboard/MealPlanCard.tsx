@@ -219,7 +219,7 @@ function MealPlanCard() {
               <div className="mt-3">
                 {menu.map((item, index) => (
                   <div key={item.id}>
-                    <div className="flex flex-row justify-between py-1.5">
+                    <div className="flex flex-row justify-between py-3">
                       <div className="max-w-100">
                         <p className="font-[HelveticaNowText] font-normal text-xs text-black/80">
                           {item.name}{" "}
