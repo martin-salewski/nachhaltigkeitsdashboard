@@ -100,17 +100,17 @@ function WeekSlider({ dayIndex, onChange }: { dayIndex: number; onChange: (i: nu
       <button
         onClick={() => onChange(Math.max(0, dayIndex - 1))}
         disabled={dayIndex === 0}
-        className="text-black/40 hover:text-black/80 disabled:opacity-20 cursor-pointer -mr-1"
+        className="text-black/40 hover:text-black/80 disabled:opacity-20 cursor-pointer"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
-      <span className="font-[HelveticaNowText] text-xs text-black/80 min-w-20 text-center">
+      <span className="font-[HelveticaNowText] text-xs text-black/80 px-1 text-center">
         {WEEKDAYS[dayIndex]}
       </span>
       <button
         onClick={() => onChange(Math.min(4, dayIndex + 1))}
         disabled={dayIndex === 4}
-        className="text-black/40 hover:text-black/80 disabled:opacity-20 cursor-pointer -ml-1"
+        className="text-black/40 hover:text-black/80 disabled:opacity-20 cursor-pointer"
       >
         <ChevronRight className="w-4 h-4" />
       </button>
@@ -202,7 +202,7 @@ function MealPlanCard() {
                 <h1 className="title">{t("mealPlan.title")}</h1>
               </CardTitle>
               <Separator className="w-full h-2 bg-black/10" />
-              <div className="flex w-full justify-end mb-2">
+              <div className="flex w-full justify-start mb-2">
                 <WeekSlider dayIndex={dayIndex} onChange={setDayIndex} />
               </div>
             </CardHeader>
