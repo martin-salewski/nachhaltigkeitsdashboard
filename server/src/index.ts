@@ -310,6 +310,26 @@ app.get('/api/student_department', async (c) => {
   return c.json(data)
 })
 
+app.post('/api/student_department', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const body = await c.req.json()
+  await db.insert(studentDepartment).values(body)
+  return c.json({ success: true, message: 'Daten gespeichert!' })
+})
+
+app.put('/api/student_department/:id', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const id = Number(c.req.param('id'))
+  const body = await c.req.json()
+  await db.update(studentDepartment).set({
+    year: body.year,
+    department: body.department,
+    gender: body.gender,
+    count: body.count,
+  }).where(eq(studentDepartment.id, id))
+  return c.json({ success: true, message: 'Daten aktualisiert!' })
+})
+
 // GET /api/student_demographics/years
 app.get('/api/student_demographics/years', async (c) => {
   const data = await db
