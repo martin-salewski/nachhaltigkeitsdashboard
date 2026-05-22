@@ -118,7 +118,7 @@ function StudentsCard() {
           <Card className="relative bg-white w-full h-full flex flex-col">
             <CardHeader>
               <CardTitle>
-                <h1 className="title">{t("students.title")}</h1>
+                <h1 className="title">{t("students.qualificationsTitle")}</h1>
               </CardTitle>
             </CardHeader>
 

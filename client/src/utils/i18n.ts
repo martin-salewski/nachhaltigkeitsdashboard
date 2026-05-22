@@ -72,6 +72,7 @@ i18next
           },
           students: {
             title: "StudentInnen",
+            qualificationsTitle: "StudentInnen – Qualifikationen",
             description: "Erfasst alle aktuell an der Hochschule eingeschriebenen Studenten",
           },
           employees: {
@@ -258,6 +259,7 @@ i18next
           },
           students: {
             title: "Students",
+            qualificationsTitle: "Students – Qualifications",
             description: "Records all currently enrolled students at the university",
           },
           employees: {
