@@ -196,9 +196,9 @@ function MealPlanCard() {
         <div
           ref={frontRef}
           style={{ backfaceVisibility: "hidden" }}
-          className="backface-hidden h-full w-full"
+          className="backface-hidden h-full w-full overflow-y-auto"
         >
-          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 overflow-y-auto">
+          <Card className="w-full min-h-full bg-white rounded-lg border border-gray-300">
             <CardHeader>
               <CardTitle>
                 <h1 className="title">{t("mealPlan.title")}</h1>
