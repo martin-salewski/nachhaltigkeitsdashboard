@@ -153,17 +153,17 @@ function MealPlanCard() {
 
   useEffect(() => {
     if (!frontRef.current || !backRef.current) return;
-    frontRef.current.style.visibility = "visible";
-    backRef.current.style.visibility = "hidden";
+    gsap.set(frontRef.current, { visibility: "visible", rotateY: 0 });
+    gsap.set(backRef.current, { visibility: "hidden", rotateY: 90 });
   }, []);
 
   const flipCard = useCallback(() => {
-    if (isAnimating || !cardRef.current || !frontRef.current || !backRef.current)
-      return;
+    if (isAnimating || !frontRef.current || !backRef.current) return;
 
     setIsAnimating(true);
+    const PERSP = 1000;
 
-    const timeline = gsap.timeline({
+    const tl = gsap.timeline({
       onComplete: () => {
         setIsFlipped((prev) => !prev);
         setIsAnimating(false);
@@ -171,34 +171,30 @@ function MealPlanCard() {
     });
 
     if (!isFlipped) {
-      timeline
-        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
+      tl.to(frontRef.current, { rotateY: -90, transformPerspective: PERSP, duration: 0.3, ease: "power2.in" })
         .set(frontRef.current, { visibility: "hidden" })
-        .set(backRef.current, { visibility: "visible" })
-        .to(cardRef.current, { rotateY: 180, duration: 0.3, ease: "power2.out" });
+        .set(backRef.current, { visibility: "visible", rotateY: 90 })
+        .to(backRef.current, { rotateY: 0, transformPerspective: PERSP, duration: 0.3, ease: "power2.out" });
     } else {
-      timeline
-        .to(cardRef.current, { rotateY: 90, duration: 0.3, ease: "power2.in" })
+      tl.to(backRef.current, { rotateY: 90, transformPerspective: PERSP, duration: 0.3, ease: "power2.in" })
         .set(backRef.current, { visibility: "hidden" })
-        .set(frontRef.current, { visibility: "visible" })
-        .to(cardRef.current, { rotateY: 0, duration: 0.3, ease: "power2.out" });
+        .set(frontRef.current, { visibility: "visible", rotateY: -90 })
+        .to(frontRef.current, { rotateY: 0, transformPerspective: PERSP, duration: 0.3, ease: "power2.out" });
     }
   }, [isFlipped, isAnimating]);
 
   return (
-    <div className="perspective-[1000px] h-full w-full">
+    <div className="h-full w-full">
       <div
         ref={cardRef}
         className="relative h-full w-full"
-        style={{ transformStyle: "preserve-3d" }}
       >
         {/* FRONT */}
         <div
           ref={frontRef}
-          style={{ backfaceVisibility: "hidden" }}
-          className="backface-hidden h-full w-full overflow-y-auto"
+          className="h-full w-full"
         >
-          <Card className="w-full min-h-full bg-white rounded-lg border border-gray-300">
+          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 flex flex-col">
             <CardHeader>
               <CardTitle>
                 <h1 className="title">{t("mealPlan.title")}</h1>
@@ -208,7 +204,7 @@ function MealPlanCard() {
                 <WeekSlider dayIndex={dayIndex} onChange={setDayIndex} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 min-h-0 overflow-y-auto">
               {isLoading && (
                 <p className="text-sm text-muted-foreground">{t("loading")}</p>
               )}
@@ -283,12 +279,8 @@ function MealPlanCard() {
         {/* BACK */}
         <div
           ref={backRef}
-          className="absolute inset-0 backface-hidden h-full w-full"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            visibility: "hidden",
-          }}
+          className="absolute inset-0 h-full w-full"
+          style={{ visibility: "hidden" }}
         >
           <Card className="relative h-full w-full" data-card-id="strom">
             <CardHeader className="pb-1">
