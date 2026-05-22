@@ -198,7 +198,7 @@ function MealPlanCard() {
           style={{ backfaceVisibility: "hidden" }}
           className="backface-hidden h-full w-full"
         >
-          <Card className="w-full h-full bg-white rounded-lg border border-gray-300 flex flex-col">
+          <Card className="w-full h-full bg-white rounded-lg border border-gray-300">
             <CardHeader>
               <CardTitle>
                 <h1 className="title">{t("mealPlan.title")}</h1>
@@ -208,7 +208,7 @@ function MealPlanCard() {
                 <WeekSlider dayIndex={dayIndex} onChange={setDayIndex} />
               </div>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <CardContent>
               {isLoading && (
                 <p className="text-sm text-muted-foreground">{t("loading")}</p>
               )}
@@ -218,7 +218,7 @@ function MealPlanCard() {
               {!isLoading && !isError && menu.length === 0 && (
                 <p className="text-sm text-muted-foreground">{t("mealPlan.noMenu")}</p>
               )}
-              <div className="overflow-y-auto flex-1 min-h-0 pr-1">
+              <div className="overflow-y-auto max-h-48 pr-1">
                 {menu.map((item, index) => (
                   <div key={item.id}>
                     <div className="flex flex-row justify-between py-1.5">
