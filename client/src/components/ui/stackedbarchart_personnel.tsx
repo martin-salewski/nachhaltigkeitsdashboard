@@ -46,7 +46,7 @@ export function ChartBarStacked({ data }: ChartProps) {
 
   return (
     <ChartContainer config={chartConfig} className="h-full w-full min-h-0">
-      <BarChart accessibilityLayer data={chartData} maxBarSize={45}>
+      <BarChart accessibilityLayer data={chartData} maxBarSize={45} margin={{ top: 20 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="department"
