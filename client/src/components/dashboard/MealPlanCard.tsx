@@ -96,7 +96,7 @@ function WeekSlider({ dayIndex, onChange }: { dayIndex: number; onChange: (i: nu
   const rangeLabel = `KW${kw}  ${formatShortDate(dates[0])} – ${formatShortDate(dates[4])}`;
   return (
     <div className="flex items-center gap-0">
-      <span className="font-[HelveticaNowText] text-[10px] text-black/40 whitespace-nowrap mr-3">{rangeLabel}</span>
+      <span className="font-[HelveticaNowText] text-xs text-black/40 whitespace-nowrap mr-3">{rangeLabel}</span>
       <button
         onClick={() => onChange(Math.max(0, dayIndex - 1))}
         disabled={dayIndex === 0}
