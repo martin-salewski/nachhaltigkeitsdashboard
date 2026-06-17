@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { gte } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from '../drizzle/db.js'
 import { mensaMenu } from "../drizzle/schema.js";
 
@@ -65,10 +65,12 @@ export async function runXmlImport() {
       return true;
     });
 
-    // 4. Zukünftige Einträge löschen, um Duplikate zu vermeiden
-    const today = new Date().toISOString().split("T")[0];
-    await db.delete(mensaMenu).where(gte(mensaMenu.date, today));
-    console.log(`🗑️  Alte Einträge ab ${today} gelöscht`);
+    // 4. Alle Einträge für die im XML vorhandenen Daten löschen
+    const datesToDelete = [...new Set(relevant.map((row) => parseDate(row.DATUM)))];
+    for (const date of datesToDelete) {
+      await db.delete(mensaMenu).where(eq(mensaMenu.date, date));
+    }
+    console.log(`🗑️  Einträge für ${datesToDelete.length} Tage gelöscht: ${datesToDelete.join(", ")}`);
 
     // 5. Neue Einträge einfügen
     for (const row of relevant) {

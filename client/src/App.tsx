@@ -105,7 +105,7 @@ function computeStudentsXlPositions(containerWidth: number): Record<string, Pos>
 }
 
 // Custom layout for the co2 filter at xl
-// Left:  BlankCard (3 cols, 4 rows)
+// Left:  AirQualityCard (3 cols, 4 rows)
 // Right: EmissionsCard (6 cols, 2 rows) on top, AnreiseCard (3 cols, 2 rows) below
 function computeCo2XlPositions(containerWidth: number): Record<string, Pos> {
   const cw   = colWidth(containerWidth, 12);

@@ -16,7 +16,7 @@ import { UsageCard } from "./UsageCard";
 import { EmployeeStat } from "./EmployeeStat";
 import { ProfStat } from "./ProfStat";
 import { StudentsStat } from "./StudentsStat";
-import { BlankCard } from "./BlankCard";
+import { AirQualityCard } from "./AirQualityCard";
 
 export type CategoryKey =
   | "co2"
@@ -147,8 +147,8 @@ const dashboardCards: CardItem[] = [
   {
     id: "blank",
     col: 10, row: 10, colSpan: 3, rowSpan: 4, lgColSpan: 1, mdColSpan: 1,
-    category: ["co2"],
-    element: <BlankCard />,
+    category: ["co2", "heat"],
+    element: <AirQualityCard />,
   },
   {
     id: "students-department",

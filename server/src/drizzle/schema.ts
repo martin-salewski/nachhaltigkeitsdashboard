@@ -211,6 +211,22 @@ export const mensaMenu = sqliteTable("mensa_menu", {
 ]);
 
 // ============================================
+// SENSOR DATA (BuildingX / LoRaWAN)
+// ============================================
+
+export const sensorData = sqliteTable("sensor_data", {
+  id: int().primaryKey({ autoIncrement: true }),
+  timestamp: text().notNull(),   // ISO datetime "YYYY-MM-DDTHH:MM:SSZ"
+  location: text().notNull(),    // Raumname z.B. "B1.01"
+  temperature: real().notNull(), // °C
+  humidity: real().notNull(),    // % relative Luftfeuchtigkeit
+  co2: int().notNull(),          // ppm
+}, (table) => [
+  index("sensor_data_timestamp_idx").on(table.timestamp),
+  index("sensor_data_location_idx").on(table.location),
+]);
+
+// ============================================
 // AIR QUALITY
 // ============================================
 

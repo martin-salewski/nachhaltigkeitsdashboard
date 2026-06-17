@@ -27,8 +27,9 @@ import { commuteStats,
   waste,
   learningFacilities,
   airQuality,
+  sensorData,
   users } from './drizzle/schema.js'
-import { eq, and, desc, asc } from 'drizzle-orm'
+import { eq, and, desc, asc, gte } from 'drizzle-orm'
 import { runXmlImport } from './jobs/xmlImport.js'
 
 import { startScheduler } from './cron/scheduler.js'
@@ -502,6 +503,34 @@ app.get('/api/air_quality', async (c) => {
     .orderBy(desc(airQuality.timestamp))
     .limit(limit)
   return c.json(data.reverse())
+})
+
+// GET /api/sensor_data/locations — distinct rooms
+app.get('/api/sensor_data/locations', async (c) => {
+  const rows = await db.selectDistinct({ location: sensorData.location }).from(sensorData).orderBy(asc(sensorData.location))
+  return c.json(rows.map(r => r.location))
+})
+
+// GET /api/sensor_data?location=B1.01&period=24h|1w|1m
+app.get('/api/sensor_data', async (c) => {
+  const location = c.req.query('location')
+  const period   = c.req.query('period') ?? '24h'
+
+  const periodMs: Record<string, number> = {
+    '24h': 24 * 60 * 60 * 1000,
+    '1w':   7 * 24 * 60 * 60 * 1000,
+    '1m':  30 * 24 * 60 * 60 * 1000,
+  }
+  const cutoff = new Date(Date.now() - (periodMs[period] ?? periodMs['24h'])).toISOString()
+
+  const conditions = [gte(sensorData.timestamp, cutoff)]
+  if (location) conditions.push(eq(sensorData.location, location))
+
+  const data = await db.select().from(sensorData)
+    .where(and(...conditions))
+    .orderBy(asc(sensorData.timestamp))
+
+  return c.json(data)
 })
 
 // GET /api/learning_facilities?year=2024

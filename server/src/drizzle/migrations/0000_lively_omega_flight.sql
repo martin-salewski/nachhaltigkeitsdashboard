@@ -146,4 +146,16 @@ CREATE TABLE `waste` (
 );
 --> statement-breakpoint
 CREATE INDEX `waste_time_idx` ON `waste` (`year`,`week`);--> statement-breakpoint
-CREATE INDEX `waste_category_idx` ON `waste` (`category`);
+CREATE INDEX `waste_category_idx` ON `waste` (`category`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `sensor_data` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`timestamp` text NOT NULL,
+	`location` text NOT NULL,
+	`temperature` real NOT NULL,
+	`humidity` real NOT NULL,
+	`co2` integer NOT NULL
+);
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `sensor_data_timestamp_idx` ON `sensor_data` (`timestamp`);
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `sensor_data_location_idx` ON `sensor_data` (`location`);

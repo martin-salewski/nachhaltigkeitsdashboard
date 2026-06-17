@@ -190,7 +190,7 @@ function StudentsCard() {
               className="absolute top-3 right-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors z-10 disabled:opacity-50 cursor-pointer"
               aria-label="Zurück"
             >
-              <X />
+              <X className="size-4" />
             </button>
           </Card>
         </div>
