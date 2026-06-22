@@ -274,6 +274,13 @@ app.post('/api/people_stats', async (c) => {
   return c.json ({sucess: true, message:'Daten gespeichert!'})
 });
 
+app.delete('/api/people_stats/year/:year', async (c) => {
+  if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
+  const year = Number(c.req.param('year'))
+  await db.delete(peopleStats).where(eq(peopleStats.year, year))
+  return c.json({ success: true, message: 'Jahresdaten gelöscht!' })
+});
+
 app.put('/api/people_stats/:id', async (c) => {
   if (!requireAuth(c)) return c.json({ error: 'Unauthorized' }, 401)
   const id = Number(c.req.param('id'));
@@ -587,8 +594,19 @@ app.post('/api/login', async (c) => {
   const ip = c.req.header('x-forwarded-for')?.split(',')[0].trim() ?? c.req.header('x-real-ip') ?? 'unknown'
   if (!checkLoginRateLimit(ip)) return c.json({ success: false, message: 'Zu viele Anmeldeversuche. Bitte warte 15 Minuten.' }, 429)
 
-  const body = await c.req.json().catch(() => ({}))
-  const { username, password } = body as { username?: string; password?: string }
+  let username: string | undefined
+  let password: string | undefined
+
+  const authHeader = c.req.header('Authorization')
+  if (authHeader?.startsWith('Basic ')) {
+    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString('utf-8')
+    const sepIndex = decoded.indexOf(':')
+    username = decoded.slice(0, sepIndex)
+    password = decoded.slice(sepIndex + 1)
+  } else {
+    const body = await c.req.json().catch(() => ({}))
+    ;({ username, password } = body as { username?: string; password?: string })
+  }
 
   const jwtSecret = process.env.JWT_SECRET
   if (!jwtSecret) return c.json({ success: false, message: 'Server nicht konfiguriert' }, 500)
