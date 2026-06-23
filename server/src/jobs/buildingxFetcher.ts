@@ -8,15 +8,6 @@ const PARTITION = process.env.BUILDINGX_PARTITION!;
 const CLIENT_ID = process.env.BUILDINGX_CLIENT_ID!;
 const CLIENT_SECRET = process.env.BUILDINGX_CLIENT_SECRET!;
 
-const ROOMS: Record<string, string> = {
-  'B1.01': '0c0df4fe-b7cc-4215-8e92-199fad9818c1',
-  'B1.11': '3762b35d-4869-4c05-80cf-720ad4146cf5',
-  'D1.03': '2b83f5a9-4934-4979-bf48-84aa0d537fcb',
-  'D1.04': 'd4405fb2-ebaa-4f18-a2e9-38d0a3adf2a9',
-  'D1.09': '8186857c-0eb4-451c-aaf8-52d3684d4bd4',
-  'D1.12': '971e873e-52a7-4724-a82c-819fb69c7d7e',
-};
-
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
 let deviceMapping: Record<string, string[]> | null = null;
@@ -47,11 +38,24 @@ async function apiGet(token: string, path: string): Promise<any> {
   return res.json();
 }
 
+async function fetchAllRooms(token: string): Promise<Record<string, string>> {
+  const res = await apiGet(token, `/structure/partitions/${PARTITION}/locations`);
+  const rooms: Record<string, string> = {};
+  for (const item of res.data ?? []) {
+    if (item.type === 'Room') {
+      rooms[item.attributes.label] = item.id;
+    }
+  }
+  return rooms;
+}
+
 async function buildDeviceMapping(): Promise<Record<string, string[]>> {
   const token = await getToken();
+  const rooms = await fetchAllRooms(token);
+  console.log(`[BuildingX] ${Object.keys(rooms).length} Räume in Partition gefunden`);
   const mapping: Record<string, string[]> = {};
 
-  for (const [roomName, roomId] of Object.entries(ROOMS)) {
+  for (const [roomName, roomId] of Object.entries(rooms)) {
     try {
       const equipRes = await apiGet(token, `/structure/partitions/${PARTITION}/locations/${roomId}/relationships/has-assets`);
       const equipmentIds: string[] = (equipRes.data ?? []).map((e: any) => e.id);
