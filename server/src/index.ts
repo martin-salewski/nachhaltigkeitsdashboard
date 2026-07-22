@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { secureHeaders } from 'hono/secure-headers'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
@@ -37,6 +38,14 @@ const app = new Hono()
 
 
 /* app.use('/api', exportRoutes); */
+// Security headers (defense-in-depth — nginx adds them in production too)
+app.use('/*', secureHeaders({
+  xFrameOptions: 'SAMEORIGIN',
+  xContentTypeOptions: 'nosniff',
+  referrerPolicy: 'strict-origin-when-cross-origin',
+  strictTransportSecurity: 'max-age=31536000; includeSubDomains',
+}))
+
 // Enable CORS for frontend
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',')
@@ -591,7 +600,9 @@ app.get("/api/mensa_menu", async (c) => {
 
 // POST /api/login
 app.post('/api/login', async (c) => {
-  const ip = c.req.header('x-forwarded-for')?.split(',')[0].trim() ?? c.req.header('x-real-ip') ?? 'unknown'
+  // X-Real-IP is set by nginx to $remote_addr (trustworthy behind proxy).
+  // X-Forwarded-For is client-controlled if no proxy — use only as fallback.
+  const ip = c.req.header('x-real-ip') ?? c.req.header('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   if (!checkLoginRateLimit(ip)) return c.json({ success: false, message: 'Zu viele Anmeldeversuche. Bitte warte 15 Minuten.' }, 429)
 
   let username: string | undefined
@@ -614,7 +625,7 @@ app.post('/api/login', async (c) => {
   const [user] = await db.select().from(users).where(eq(users.username, username ?? ''))
   if (!user) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
 
-  if (!user.isActive || !user.passwordHash) return c.json({ success: false, message: 'Konto noch nicht aktiviert' }, 401)
+  if (!user.isActive || !user.passwordHash) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
 
   const passwordMatch = await bcrypt.compare(password ?? '', user.passwordHash)
   if (!passwordMatch) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
