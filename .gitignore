@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 .env
 .env.*
+
+# Local database & dev-mode migration workaround
+server/local.db
+server/drizzle/
+
+# Claude Code local settings
+.claude/settings.local.json
