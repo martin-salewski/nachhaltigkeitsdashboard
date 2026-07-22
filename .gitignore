@@ -31,3 +31,9 @@ server/drizzle/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Playwright test screenshots
+.playwright-mcp/
+
+# Auto-downloaded files (n8n workflow fetches these at runtime)
+server/downloads/
