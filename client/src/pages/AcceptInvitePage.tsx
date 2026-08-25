@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
 import { Eye, EyeOff } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function AcceptInvitePage() {
   const [params] = useSearchParams();
@@ -17,24 +18,22 @@ export default function AcceptInvitePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password.length < 8) { setError("Passwort muss mindestens 8 Zeichen haben."); return; }
+    if (password.length < 12) { setError("Passwort muss mindestens 12 Zeichen haben."); return; }
     if (password !== confirm) { setError("Passwörter stimmen nicht überein."); return; }
     setLoading(true);
-    try {
-      const res = await fetch("/api/auth/accept-invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.message ?? "Fehler"); return; }
-      sessionStorage.setItem("auth_token", data.token);
-      navigate("/admin");
-    } catch {
-      setError("Verbindungsfehler. Bitte erneut versuchen.");
-    } finally {
+    // Einladung und Reset nutzen denselben Better-Auth-Endpunkt; der Token
+    // kommt aus der Weiterleitung des Links in der Einladungsmail.
+    const { error: resetError } = await authClient.resetPassword({
+      newPassword: password,
+      token,
+    });
+    if (resetError) {
+      setError(resetError.message ?? "Link ungültig oder abgelaufen.");
       setLoading(false);
+      return;
     }
+    // Nach dem Setzen des Passworts besteht noch keine Session.
+    navigate("/login");
   }
 
   return (

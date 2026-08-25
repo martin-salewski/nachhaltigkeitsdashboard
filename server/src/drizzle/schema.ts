@@ -260,3 +260,69 @@ export const learningFacilities = sqliteTable("learning_facilities", {
 }, (table) => [
   index("learning_facilities_year_idx").on(table.year),
 ]);
+
+// ============================================
+// BETTER AUTH
+// Feldnamen und Typen entsprechen exakt getAuthTables() aus better-auth@1.6.28
+// inkl. admin-Plugin (user.role/banned/banReason/banExpires, session.impersonatedBy).
+// Nicht per Hand umbenennen — der Drizzle-Adapter matcht über die Objekt-Keys.
+// ============================================
+
+export const user = sqliteTable("user", {
+  id: text().primaryKey(),
+  name: text().notNull(),
+  email: text().notNull().unique(),
+  emailVerified: int({ mode: "boolean" }).notNull().default(false),
+  image: text(),
+  createdAt: int({ mode: "timestamp" }).notNull(),
+  updatedAt: int({ mode: "timestamp" }).notNull(),
+  // admin-Plugin
+  role: text(),
+  banned: int({ mode: "boolean" }).default(false),
+  banReason: text(),
+  banExpires: int({ mode: "timestamp" }),
+});
+
+export const session = sqliteTable("session", {
+  id: text().primaryKey(),
+  expiresAt: int({ mode: "timestamp" }).notNull(),
+  token: text().notNull().unique(),
+  createdAt: int({ mode: "timestamp" }).notNull(),
+  updatedAt: int({ mode: "timestamp" }).notNull(),
+  ipAddress: text(),
+  userAgent: text(),
+  userId: text().notNull().references(() => user.id, { onDelete: "cascade" }),
+  // admin-Plugin
+  impersonatedBy: text(),
+}, (table) => [
+  index("session_userId_idx").on(table.userId),
+]);
+
+export const account = sqliteTable("account", {
+  id: text().primaryKey(),
+  accountId: text().notNull(),
+  providerId: text().notNull(),
+  userId: text().notNull().references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text(),
+  refreshToken: text(),
+  idToken: text(),
+  accessTokenExpiresAt: int({ mode: "timestamp" }),
+  refreshTokenExpiresAt: int({ mode: "timestamp" }),
+  scope: text(),
+  password: text(),
+  createdAt: int({ mode: "timestamp" }).notNull(),
+  updatedAt: int({ mode: "timestamp" }).notNull(),
+}, (table) => [
+  index("account_userId_idx").on(table.userId),
+]);
+
+export const verification = sqliteTable("verification", {
+  id: text().primaryKey(),
+  identifier: text().notNull(),
+  value: text().notNull(),
+  expiresAt: int({ mode: "timestamp" }).notNull(),
+  createdAt: int({ mode: "timestamp" }).notNull(),
+  updatedAt: int({ mode: "timestamp" }).notNull(),
+}, (table) => [
+  index("verification_identifier_idx").on(table.identifier),
+]);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
+import { authClient } from "@/lib/auth-client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -10,10 +11,11 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    // Antwort bewusst ignoriert: die Meldung ist immer dieselbe, damit sich
+    // über die Seite nicht herausfinden lässt, welche Adressen existieren.
+    await authClient.requestPasswordReset({
+      email,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setSent(true);
     setLoading(false);

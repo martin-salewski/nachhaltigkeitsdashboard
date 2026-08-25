@@ -4,14 +4,10 @@ import { useNavigate } from "react-router-dom";
 import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, Circle, Plus, LogOut, Trash2, UserPlus, PlusCircle, MinusCircle, LayoutDashboard } from "lucide-react";
-import { isAdmin, getTokenPayload } from "@/utils/auth";
+import { useAuth } from "@/utils/auth";
+import { signOut } from "@/lib/auth-client";
 
 const API = "";
-
-function authHeader(): Record<string, string> {
-  const token = sessionStorage.getItem("auth_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 interface SustainabilityGoal {
   id: number;
@@ -32,11 +28,11 @@ interface GoalLog {
 }
 
 interface User {
-  id: number;
-  username: string;
+  id: string;
+  name: string;
   email: string;
   role: string;
-  isActive: number;
+  banned: boolean;
 }
 
 // ── Goals tab ──────────────────────────────────────────────────────────────
@@ -66,7 +62,7 @@ function GoalsTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await fetch(`${API}/api/sustainability_goals/${id}`, { method: "DELETE", headers: authHeader() });
+      await fetch(`${API}/api/sustainability_goals/${id}`, { method: "DELETE" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sustainability_goals"] }),
   });
@@ -75,7 +71,7 @@ function GoalsTab() {
     mutationFn: async (data: { title: string; description: string; targetYear: number; targetValue: number | null }) => {
       const res = await fetch(`${API}/api/sustainability_goals`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       return res.json();
@@ -193,7 +189,7 @@ function LogsTab() {
   const { data: logs = [], isLoading } = useQuery<GoalLog[]>({
     queryKey: ["goal_logs"],
     queryFn: async () => {
-      const res = await fetch(`${API}/api/goal_logs`, { headers: authHeader() });
+      const res = await fetch(`${API}/api/goal_logs`);
       return res.json();
     },
     refetchInterval: 30000,
@@ -246,30 +242,30 @@ function LogsTab() {
 
 function UsersTab() {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({ username: "", email: "", role: "mitarbeiterin" });
+  const [form, setForm] = useState({ name: "", email: "", role: "mitarbeiterin" });
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["admin_users"],
     queryFn: async () => {
-      const res = await fetch(`${API}/api/admin/users`, { headers: authHeader() });
+      const res = await fetch(`${API}/api/admin/users`);
       return res.json();
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await fetch(`${API}/api/admin/users/${id}`, { method: "DELETE", headers: authHeader() });
+    mutationFn: async (id: string) => {
+      await fetch(`${API}/api/admin/users/${id}`, { method: "DELETE" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin_users"] }),
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: { username: string; email: string; role: string }) => {
+    mutationFn: async (data: { name: string; email: string; role: string }) => {
       const res = await fetch(`${API}/api/admin/users`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw await res.json();
@@ -277,7 +273,7 @@ function UsersTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_users"] });
-      setForm({ username: "", email: "", role: "mitarbeiterin" });
+      setForm({ name: "", email: "", role: "mitarbeiterin" });
       setFormSuccess(true);
       setTimeout(() => setFormSuccess(false), 3000);
     },
@@ -290,7 +286,7 @@ function UsersTab() {
     createMutation.mutate(form);
   }
 
-  const currentUserId = getTokenPayload()?.userId;
+  const { user: currentUser } = useAuth();
 
   return (
     <div className="space-y-8">
@@ -303,7 +299,7 @@ function UsersTab() {
             {users.map((user) => (
               <div key={user.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-black/70">{user.username}</p>
+                  <p className="text-sm font-medium text-black/70">{user.name}</p>
                   <p className="text-xs text-black/40">{user.email}</p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
@@ -311,12 +307,12 @@ function UsersTab() {
                 }`}>
                   {user.role === "admin" ? "Admin" : "MitarbeiterIn"}
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                  user.isActive ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-500"
-                }`}>
-                  {user.isActive ? "Aktiv" : "Eingeladen"}
-                </span>
-                {user.id !== currentUserId && (
+                {user.banned && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0 bg-red-50 text-red-600">
+                    Gesperrt
+                  </span>
+                )}
+                {user.id !== currentUser?.id && (
                   <button onClick={() => deleteMutation.mutate(user.id)}
                     className="text-black/20 hover:text-red-500 transition-colors cursor-pointer shrink-0">
                     <Trash2 className="size-4" />
@@ -335,10 +331,10 @@ function UsersTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-black/60">Benutzername *</label>
-                <input type="text" value={form.username} onChange={(e) => setForm(f => ({ ...f, username: e.target.value }))} required
+                <label className="text-sm font-medium text-black/60">Name *</label>
+                <input type="text" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors"
-                  placeholder="max.mustermann" />
+                  placeholder="Max Mustermann" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-black/60">E-Mail-Adresse *</label>
@@ -373,11 +369,13 @@ function UsersTab() {
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const admin = isAdmin();
+  const { isAdmin: admin } = useAuth();
   const [activeTab, setActiveTab] = useState<"goals" | "logs" | "users">("goals");
 
-  function handleLogout() {
-    sessionStorage.removeItem("auth_token");
+  async function handleLogout() {
+    // Löscht das Session-Cookie serverseitig; im Browser liegt nichts mehr,
+    // was hier aufgeräumt werden müsste.
+    await signOut();
     navigate("/login");
   }
 

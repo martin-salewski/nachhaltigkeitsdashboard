@@ -1,15 +1,13 @@
+import { randomBytes } from 'crypto'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { secureHeaders } from 'hono/secure-headers'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import crypto from 'crypto'
 import { migrate } from 'drizzle-orm/libsql/migrator'
+import { existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { db } from './drizzle/db.js'
-import { sendInviteEmail, sendResetEmail } from './services/email.js'
 import { commuteStats,
   emissions,
   buildingRating,
@@ -28,13 +26,23 @@ import { commuteStats,
   waste,
   learningFacilities,
   airQuality,
-  sensorData,
-  users } from './drizzle/schema.js'
+  sensorData } from './drizzle/schema.js'
 import { eq, and, desc, asc, gte } from 'drizzle-orm'
 import { runXmlImport } from './jobs/xmlImport.js'
+import type { Context } from 'hono'
+import { auth } from './auth.js'
 
 import { startScheduler } from './cron/scheduler.js'
-const app = new Hono()
+type AuthUser = {
+  id: string
+  email: string
+  name: string
+  role: string | null
+}
+
+type Env = { Variables: { authUser: AuthUser | null } }
+
+const app = new Hono<Env>()
 
 
 /* app.use('/api', exportRoutes); */
@@ -46,24 +54,51 @@ app.use('/*', secureHeaders({
   strictTransportSecurity: 'max-age=31536000; includeSubDomains',
 }))
 
-// Enable CORS for frontend
+// CORS — credentials: true, weil die Session als Cookie kommt. Damit ist ein
+// Wildcard-Origin nicht mehr erlaubt, die Liste muss also stimmen.
 const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',')
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
   : ['http://localhost:5173', 'http://localhost:5174']
-app.use('/*', cors({ origin: allowedOrigins }))
+app.use('/*', cors({
+  origin: allowedOrigins,
+  credentials: true,
+  allowHeaders: ['Content-Type'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}))
 
-// Simple in-memory rate limiter for login endpoint
-const loginAttempts = new Map<string, { count: number; resetAt: number }>()
-function checkLoginRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = loginAttempts.get(ip)
-  if (!entry || entry.resetAt < now) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 })
-    return true
+// Better Auth übernimmt sign-in/sign-out, Passwort-Reset und die Admin-Endpunkte.
+// Muss vor der Session-Middleware stehen, sonst schlägt sie bei jedem Login-Versuch
+// unnötig in der DB nach.
+app.all('/api/auth/*', (c) => auth.handler(c.req.raw))
+
+// Session einmal pro Request auflösen und im Context ablegen. Dadurch bleibt
+// requireAuth() synchron und die 17 bestehenden Aufrufstellen unverändert.
+app.use('/*', async (c, next) => {
+  // Ohne Session-Cookie kann es keine Session geben — der DB-Treffer entfällt
+  // damit auf allen öffentlichen Dashboard-Requests.
+  if (c.req.raw.headers.get('cookie')?.includes('session_token')) {
+    const session = await auth.api.getSession({ headers: c.req.raw.headers })
+    c.set('authUser', session?.user
+      ? {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          role: (session.user as { role?: string | null }).role ?? null,
+        }
+      : null)
+  } else {
+    c.set('authUser', null)
   }
-  if (entry.count >= 10) return false
-  entry.count++
-  return true
+  await next()
+})
+
+// Liest die von der Middleware aufgelöste Session. `requiredRole` verhält sich wie
+// vorher: nur 'admin' schränkt wirklich ein, alles andere heißt "eingeloggt".
+function requireAuth(c: Context<Env>, requiredRole?: 'admin' | 'mitarbeiterin') {
+  const user = c.get('authUser')
+  if (!user) return null
+  if (requiredRole === 'admin' && user.role !== 'admin') return null
+  return user
 }
 
 app.get('/', (c) => {
@@ -386,7 +421,7 @@ app.post('/api/sustainability_goals', async (c) => {
   await db.insert(goalLogs).values({
     action: 'created',
     goalTitle: title,
-    username: user?.username ?? 'unbekannt',
+    username: user?.email ?? 'unbekannt',
     timestamp: Math.floor(Date.now() / 1000),
   })
   return c.json(row, 201)
@@ -416,7 +451,7 @@ app.delete('/api/sustainability_goals/:id', async (c) => {
     await db.insert(goalLogs).values({
       action: 'deleted',
       goalTitle: goal.title,
-      username: user.username,
+      username: user.email,
       timestamp: Math.floor(Date.now() / 1000),
     })
   }
@@ -559,18 +594,7 @@ app.get('/api/learning_facilities', async (c) => {
 })
 
  app.post("/admin/import", async (c) => {
-  const authHeader = c.req.header('Authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  const jwtSecret = process.env.JWT_SECRET
-
-  if (!token || !jwtSecret) {
-    return c.json({ success: false, message: 'Nicht autorisiert' }, 401)
-  }
-  try {
-    jwt.verify(token, jwtSecret)
-  } catch {
-    return c.json({ success: false, message: 'Ungültiger oder abgelaufener Token' }, 401)
-  }
+  if (!requireAuth(c)) return c.json({ success: false, message: 'Nicht autorisiert' }, 401)
 
   try {
     await runXmlImport();
@@ -598,152 +622,112 @@ app.get("/api/mensa_menu", async (c) => {
   return c.json({ success: true, message: "Alle Einträge gelöscht" });
 }); */
 
-// POST /api/login
-app.post('/api/login', async (c) => {
-  // X-Real-IP is set by nginx to $remote_addr (trustworthy behind proxy).
-  // X-Forwarded-For is client-controlled if no proxy — use only as fallback.
-  const ip = c.req.header('x-real-ip') ?? c.req.header('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-  if (!checkLoginRateLimit(ip)) return c.json({ success: false, message: 'Zu viele Anmeldeversuche. Bitte warte 15 Minuten.' }, 429)
-
-  let username: string | undefined
-  let password: string | undefined
-
-  const authHeader = c.req.header('Authorization')
-  if (authHeader?.startsWith('Basic ')) {
-    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString('utf-8')
-    const sepIndex = decoded.indexOf(':')
-    username = decoded.slice(0, sepIndex)
-    password = decoded.slice(sepIndex + 1)
-  } else {
-    const body = await c.req.json().catch(() => ({}))
-    ;({ username, password } = body as { username?: string; password?: string })
-  }
-
-  const jwtSecret = process.env.JWT_SECRET
-  if (!jwtSecret) return c.json({ success: false, message: 'Server nicht konfiguriert' }, 500)
-
-  const [user] = await db.select().from(users).where(eq(users.username, username ?? ''))
-  if (!user) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
-
-  if (!user.isActive || !user.passwordHash) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
-
-  const passwordMatch = await bcrypt.compare(password ?? '', user.passwordHash)
-  if (!passwordMatch) return c.json({ success: false, message: 'Ungültige Anmeldedaten' }, 401)
-
-  const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, jwtSecret, { expiresIn: '8h' })
-  return c.json({ success: true, token })
-})
-
-// Helper: JWT aus Header lesen und prüfen
-function requireAuth(c: any, requiredRole?: 'admin' | 'mitarbeiterin') {
-  const jwtSecret = process.env.JWT_SECRET
-  const authHeader = c.req.header('Authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  if (!token || !jwtSecret) return null
-  try {
-    const payload = jwt.verify(token, jwtSecret) as { userId: number; username: string; role: string }
-    if (requiredRole === 'admin' && payload.role !== 'admin') return null
-    return payload
-  } catch {
-    return null
-  }
-}
+// ============================================
+// ADMIN: Benutzerverwaltung
+// Dünne Wrapper um das Better-Auth admin-Plugin. Die Autorisierung macht das
+// Plugin selbst anhand der Session (adminRoles: ['admin']); requireAuth davor
+// spart nur den Roundtrip und liefert eine einheitliche Fehlermeldung.
+// ============================================
 
 // GET /api/admin/users — alle User auflisten (nur admin)
 app.get('/api/admin/users', async (c) => {
   if (!requireAuth(c, 'admin')) return c.json({ message: 'Nicht autorisiert' }, 401)
-  const allUsers = await db.select({
-    id: users.id,
-    username: users.username,
-    email: users.email,
-    role: users.role,
-    isActive: users.isActive,
-  }).from(users)
-  return c.json(allUsers)
+
+  const result = await auth.api.listUsers({
+    query: { limit: 500 },
+    headers: c.req.raw.headers,
+  })
+
+  return c.json(result.users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: (u as { role?: string | null }).role ?? 'mitarbeiterin',
+    banned: (u as { banned?: boolean | null }).banned ?? false,
+  })))
 })
 
-// POST /api/admin/users — User einladen (nur admin)
+// POST /api/admin/users — User anlegen und Einladung verschicken (nur admin)
 app.post('/api/admin/users', async (c) => {
   if (!requireAuth(c, 'admin')) return c.json({ message: 'Nicht autorisiert' }, 401)
-  const { username, email, role } = await c.req.json()
-  if (!username || !email || !role) return c.json({ message: 'username, email und role erforderlich' }, 400)
 
-  const inviteToken = crypto.randomBytes(32).toString('hex')
-  const tokenExpiresAt = Math.floor(Date.now() / 1000) + 60 * 60 * 48 // 48h
+  const { name, email, role } = await c.req.json()
+  if (!name || !email || !role) return c.json({ message: 'name, email und role erforderlich' }, 400)
+  if (role !== 'admin' && role !== 'mitarbeiterin') return c.json({ message: 'Unbekannte Rolle' }, 400)
+
+  // Der Account bekommt ein zufälliges Passwort, das niemand kennt. Gesetzt wird
+  // es erst über den Einladungslink — derselbe Mechanismus wie beim Reset.
+  const throwawayPassword = randomBytes(32).toString('base64url')
 
   try {
-    await db.insert(users).values({ username, email, role, isActive: 0, inviteToken, tokenExpiresAt })
-  } catch {
-    return c.json({ message: 'Benutzername oder E-Mail bereits vergeben' }, 409)
+    await auth.api.createUser({
+      body: { name, email, password: throwawayPassword, role },
+      headers: c.req.raw.headers,
+    })
+  } catch (err) {
+    const status = (err as { statusCode?: number }).statusCode
+    if (status === 422) return c.json({ message: 'E-Mail bereits vergeben' }, 409)
+    throw err
   }
 
-  await sendInviteEmail(email, inviteToken)
+  // Absolute URL, weil Frontend (5173) und API (3000) in der Entwicklung
+  // getrennte Origins sind. redirectTo entscheidet in auth.ts außerdem über
+  // Einladungs- statt Reset-Wortlaut.
+  const appUrl = process.env.APP_URL ?? 'http://localhost:5173'
+  await auth.api.requestPasswordReset({
+    body: { email, redirectTo: `${appUrl}/accept-invite` },
+  })
+
   return c.json({ success: true })
 })
 
 // DELETE /api/admin/users/:id — User löschen (nur admin)
 app.delete('/api/admin/users/:id', async (c) => {
-  const auth = requireAuth(c, 'admin')
-  if (!auth) return c.json({ message: 'Nicht autorisiert' }, 401)
-  const id = Number(c.req.param('id'))
-  if (auth.userId === id) return c.json({ message: 'Eigenen Account nicht löschbar' }, 400)
-  await db.delete(users).where(eq(users.id, id))
+  const current = requireAuth(c, 'admin')
+  if (!current) return c.json({ message: 'Nicht autorisiert' }, 401)
+
+  const id = c.req.param('id')
+  if (current.id === id) return c.json({ message: 'Eigenen Account nicht löschbar' }, 400)
+
+  await auth.api.removeUser({
+    body: { userId: id },
+    headers: c.req.raw.headers,
+  })
   return c.json({ success: true })
 })
 
-// POST /api/auth/accept-invite — Passwort setzen via Einladungstoken
-app.post('/api/auth/accept-invite', async (c) => {
-  const { token, password } = await c.req.json()
-  if (!token || !password) return c.json({ message: 'Token und Passwort erforderlich' }, 400)
-  if (typeof password === 'string' && password.length < 8) return c.json({ message: 'Passwort muss mindestens 8 Zeichen lang sein' }, 400)
+// POST /api/admin/users/:id/role — Rolle ändern (nur admin)
+app.post('/api/admin/users/:id/role', async (c) => {
+  const current = requireAuth(c, 'admin')
+  if (!current) return c.json({ message: 'Nicht autorisiert' }, 401)
 
-  const [user] = await db.select().from(users).where(eq(users.inviteToken, token))
-  if (!user || !user.tokenExpiresAt || user.tokenExpiresAt < Math.floor(Date.now() / 1000)) {
-    return c.json({ message: 'Link ungültig oder abgelaufen' }, 400)
-  }
+  const id = c.req.param('id')
+  const { role } = await c.req.json()
+  if (role !== 'admin' && role !== 'mitarbeiterin') return c.json({ message: 'Unbekannte Rolle' }, 400)
+  if (current.id === id) return c.json({ message: 'Eigene Rolle nicht änderbar' }, 400)
 
-  const passwordHash = await bcrypt.hash(password, 12)
-  await db.update(users).set({ passwordHash, isActive: 1, inviteToken: null, tokenExpiresAt: null }).where(eq(users.id, user.id))
-
-  const jwtSecret = process.env.JWT_SECRET!
-  const jwtToken = jwt.sign({ userId: user.id, username: user.username, role: user.role }, jwtSecret, { expiresIn: '8h' })
-  return c.json({ success: true, token: jwtToken })
-})
-
-// POST /api/auth/forgot-password — Reset-Link per Mail senden
-app.post('/api/auth/forgot-password', async (c) => {
-  const { email } = await c.req.json()
-  const [user] = await db.select().from(users).where(eq(users.email, email ?? ''))
-  // immer 200 zurückgeben um E-Mail-Enumeration zu verhindern
-  if (!user) return c.json({ success: true })
-
-  const resetToken = crypto.randomBytes(32).toString('hex')
-  const tokenExpiresAt = Math.floor(Date.now() / 1000) + 60 * 60 // 1h
-
-  await db.update(users).set({ resetToken, tokenExpiresAt }).where(eq(users.id, user.id))
-  await sendResetEmail(user.email, resetToken)
+  await auth.api.setRole({
+    body: { userId: id, role },
+    headers: c.req.raw.headers,
+  })
   return c.json({ success: true })
 })
 
-// POST /api/auth/reset-password — Passwort via Reset-Token neu setzen
-app.post('/api/auth/reset-password', async (c) => {
-  const { token, password } = await c.req.json()
-  if (!token || !password) return c.json({ message: 'Token und Passwort erforderlich' }, 400)
-  if (typeof password === 'string' && password.length < 8) return c.json({ message: 'Passwort muss mindestens 8 Zeichen lang sein' }, 400)
-
-  const [user] = await db.select().from(users).where(eq(users.resetToken, token))
-  if (!user || !user.tokenExpiresAt || user.tokenExpiresAt < Math.floor(Date.now() / 1000)) {
-    return c.json({ message: 'Link ungültig oder abgelaufen' }, 400)
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12)
-  await db.update(users).set({ passwordHash, resetToken: null, tokenExpiresAt: null }).where(eq(users.id, user.id))
-  return c.json({ success: true })
-})
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') })
-console.log('[migrate] Migrations angewendet')
+
+// In der Entwicklung (tsx auf src/) liegen die Migrationen unter
+// src/drizzle/migrations; im Container kopiert das Dockerfile sie nach
+// dist/drizzle. Vorher zeigte der Pfad im Dev-Modus auf ein veraltetes
+// server/drizzle, sodass neue Migrationen lokal nie angewendet wurden.
+const migrationsFolder = [
+  path.join(__dirname, 'drizzle/migrations'),
+  path.join(__dirname, '../drizzle'),
+].find((dir) => existsSync(path.join(dir, 'meta', '_journal.json')))
+
+if (!migrationsFolder) throw new Error('Migrationsordner nicht gefunden')
+await migrate(db, { migrationsFolder })
+console.log(`[migrate] Migrations angewendet aus ${migrationsFolder}`)
 
 serve({
   fetch: app.fetch,

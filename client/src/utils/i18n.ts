@@ -12,8 +12,8 @@ i18next
           login: {
             title: "Nachhaltigkeitsdashboard",
             subtitle: "Bitte melden Sie sich an, um fortzufahren",
-            username: "Benutzername",
-            usernamePlaceholder: "Benutzername eingeben",
+            email: "E-Mail-Adresse",
+            emailPlaceholder: "vorname.nachname@hs-mainz.de",
             password: "Passwort",
             submit: "Anmelden",
             loading: "Anmelden...",
@@ -214,8 +214,8 @@ i18next
           login: {
             title: "Sustainability Dashboard",
             subtitle: "Please sign in to continue",
-            username: "Username",
-            usernamePlaceholder: "Enter username",
+            email: "Email address",
+            emailPlaceholder: "firstname.lastname@hs-mainz.de",
             password: "Password",
             submit: "Sign in",
             loading: "Signing in...",

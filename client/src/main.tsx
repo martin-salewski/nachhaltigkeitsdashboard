@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import "./App.css";
 import App from "./App.tsx";
+import { useSession } from "./lib/auth-client";
 import LoginPage from "./pages/LoginPage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
 import AcceptInvitePage from "./pages/AcceptInvitePage.tsx";
@@ -22,8 +23,11 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuth = !!sessionStorage.getItem("auth_token");
-  return isAuth ? <>{children}</> : <Navigate to="/login" replace />;
+  const { data, isPending } = useSession();
+  // Die Session steht erst nach dem Abruf fest — bis dahin nicht wegnavigieren,
+  // sonst landet ein angemeldeter User beim Reload kurz auf /login.
+  if (isPending) return null;
+  return data?.session ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 createRoot(document.getElementById("root")!).render(

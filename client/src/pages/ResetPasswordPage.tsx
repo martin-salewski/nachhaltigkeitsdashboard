@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
 import { Eye, EyeOff } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
@@ -17,23 +18,19 @@ export default function ResetPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password.length < 8) { setError("Passwort muss mindestens 8 Zeichen haben."); return; }
+    if (password.length < 12) { setError("Passwort muss mindestens 12 Zeichen haben."); return; }
     if (password !== confirm) { setError("Passwörter stimmen nicht überein."); return; }
     setLoading(true);
-    try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.message ?? "Fehler"); return; }
-      navigate("/login");
-    } catch {
-      setError("Verbindungsfehler. Bitte erneut versuchen.");
-    } finally {
+    const { error: resetError } = await authClient.resetPassword({
+      newPassword: password,
+      token,
+    });
+    if (resetError) {
+      setError(resetError.message ?? "Link ungültig oder abgelaufen.");
       setLoading(false);
+      return;
     }
+    navigate("/login");
   }
 
   return (

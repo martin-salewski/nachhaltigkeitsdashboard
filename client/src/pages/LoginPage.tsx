@@ -3,11 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import Logo from "@/assets/icons/HSM_Logo_Dachmarke_RGB.svg";
 import { useTranslation } from "react-i18next";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,25 +18,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        sessionStorage.setItem("auth_token", data.token);
-        navigate("/admin");
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.message ?? t("login.error"));
-      }
-    } catch {
-      setError(t("login.networkError"));
-    } finally {
+    // Better Auth setzt die Session als httpOnly-Cookie; hier gibt es
+    // nichts mehr im sessionStorage abzulegen.
+    const { error: signInError } = await signIn.email({ email, password });
+    if (signInError) {
+      setError(signInError.message ?? t("login.error"));
       setLoading(false);
+      return;
     }
+    navigate("/admin");
   }
 
   return (
@@ -63,16 +54,16 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-black/60">
-                  {t("login.username")}
+                  {t("login.email")}
                 </label>
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors"
-                  placeholder={t("login.usernamePlaceholder")}
+                  placeholder={t("login.emailPlaceholder")}
                 />
               </div>
 

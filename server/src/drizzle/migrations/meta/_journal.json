@@ -15,6 +15,13 @@
       "when": 1782149861708,
       "tag": "0001_dapper_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787216220630,
+      "tag": "0002_better_auth",
+      "breakpoints": true
     }
   ]
 }
