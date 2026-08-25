@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins/admin";
+import { APIError } from "better-auth/api";
 import { db } from "./drizzle/db.js";
 import { user, session, account, verification } from "./drizzle/schema.js";
 import { sendInviteLinkEmail, sendResetLinkEmail } from "./services/email.js";
@@ -10,6 +11,9 @@ import { sendInviteLinkEmail, sendResetLinkEmail } from "./services/email.js";
 // Session über HTTPS unnötig ohne Secure-Attribut ausliefern.
 const baseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 const useSecureCookies = baseURL.startsWith("https://");
+
+/** Accounts sind auf Dienstadressen der Hochschule beschränkt. */
+export const ALLOWED_EMAIL_DOMAIN = "@hs-mainz.de";
 
 const trustedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
@@ -65,6 +69,25 @@ export const auth = betterAuth({
       "/sign-in/email": { window: 15 * 60, max: 10 },
       "/forget-password": { window: 15 * 60, max: 5 },
       "/reset-password": { window: 15 * 60, max: 10 },
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        // Letzte Instanz vor dem Schreiben: greift für jeden Weg, über den ein
+        // Account entstehen kann — auch für auth.api.createUser und alles, was
+        // später dazukommt. Die Prüfung in der Admin-Route liefert nur die
+        // freundlichere Fehlermeldung.
+        before: async (newUser) => {
+          if (!newUser.email.toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN)) {
+            throw new APIError("BAD_REQUEST", {
+              message: `Nur Adressen auf ${ALLOWED_EMAIL_DOMAIN} sind zugelassen.`,
+            });
+          }
+          return { data: newUser };
+        },
+      },
     },
   },
 

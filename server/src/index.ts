@@ -30,7 +30,7 @@ import { commuteStats,
 import { eq, and, desc, asc, gte } from 'drizzle-orm'
 import { runXmlImport } from './jobs/xmlImport.js'
 import type { Context } from 'hono'
-import { auth } from './auth.js'
+import { ALLOWED_EMAIL_DOMAIN, auth } from './auth.js'
 
 import { startScheduler } from './cron/scheduler.js'
 type AuthUser = {
@@ -654,6 +654,9 @@ app.post('/api/admin/users', async (c) => {
   const { name, email, role } = await c.req.json()
   if (!name || !email || !role) return c.json({ message: 'name, email und role erforderlich' }, 400)
   if (role !== 'admin' && role !== 'mitarbeiterin') return c.json({ message: 'Unbekannte Rolle' }, 400)
+  if (!String(email).toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN)) {
+    return c.json({ message: `Nur Adressen auf ${ALLOWED_EMAIL_DOMAIN} sind zugelassen.` }, 400)
+  }
 
   // Der Account bekommt ein zufälliges Passwort, das niemand kennt. Gesetzt wird
   // es erst über den Einladungslink — derselbe Mechanismus wie beim Reset.
