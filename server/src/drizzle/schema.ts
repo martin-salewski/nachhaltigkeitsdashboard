@@ -1,22 +1,6 @@
 import { int, real, sqliteTable, text, index } from "drizzle-orm/sqlite-core";
 
 // ============================================
-// USERS / AUTH
-// ============================================
-
-export const users = sqliteTable("users", {
-  id: int().primaryKey({ autoIncrement: true }),
-  username: text().notNull().unique(),
-  email: text().notNull().unique(),
-  passwordHash: text(), // null until user sets password via invite
-  role: text().notNull().default("mitarbeiterin"), // 'admin' | 'mitarbeiterin'
-  isActive: int().notNull().default(0), // 0 = invited, 1 = active
-  inviteToken: text(),
-  resetToken: text(),
-  tokenExpiresAt: int(), // Unix timestamp (seconds)
-});
-
-// ============================================
 // PEOPLE & DEMOGRAPHICS
 // ============================================
 

@@ -14,12 +14,25 @@
 import 'dotenv/config';
 import { randomBytes, randomUUID } from 'crypto';
 import { hashPassword } from 'better-auth/crypto';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../drizzle/db.js';
-import { users, user, account } from '../drizzle/schema.js';
+import { user, account } from '../drizzle/schema.js';
 import { auth } from '../auth.js';
 
-const legacyUsers = await db.select().from(users);
+// Bewusst rohes SQL: die alte `users`-Tabelle ist nicht mehr Teil des Schemas
+// und wird von der Migration 0003 entfernt. Auf einem Server, der noch nicht
+// migriert wurde, existiert sie aber weiterhin.
+const tableExists = await db.get<{ name: string }>(
+  sql`select name from sqlite_master where type='table' and name='users'`,
+);
+if (!tableExists) {
+  console.log('[migrate-users] Keine alte users-Tabelle vorhanden — nichts zu tun.');
+  process.exit(0);
+}
+
+const legacyUsers = await db.all<{ username: string; email: string; role: string }>(
+  sql`select username, email, role from users`,
+);
 console.log(`[migrate-users] ${legacyUsers.length} Accounts in der alten Tabelle gefunden`);
 
 let created = 0;
