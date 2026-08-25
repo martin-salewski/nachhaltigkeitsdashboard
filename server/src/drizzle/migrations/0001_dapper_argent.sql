@@ -18,7 +18,7 @@ CREATE TABLE `goal_logs` (
 	`timestamp` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `sensor_data` (
+CREATE TABLE IF NOT EXISTS `sensor_data` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`timestamp` text NOT NULL,
 	`location` text NOT NULL,
@@ -27,8 +27,8 @@ CREATE TABLE `sensor_data` (
 	`co2` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `sensor_data_timestamp_idx` ON `sensor_data` (`timestamp`);--> statement-breakpoint
-CREATE INDEX `sensor_data_location_idx` ON `sensor_data` (`location`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `sensor_data_timestamp_idx` ON `sensor_data` (`timestamp`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `sensor_data_location_idx` ON `sensor_data` (`location`);--> statement-breakpoint
 CREATE TABLE `student_department` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`year` integer NOT NULL,
