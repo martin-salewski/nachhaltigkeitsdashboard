@@ -9,6 +9,9 @@ import { signOut } from "@/lib/auth-client";
 
 const API = "";
 
+// Eingabefelder laufen auf der Hausschrift, der Rest der Seite auf SimStd
+const inputFont = { fontFamily: '"HelveticaNowText", sans-serif' };
+
 interface SustainabilityGoal {
   id: number;
   title: string;
@@ -334,19 +337,22 @@ function UsersTab() {
                 <label className="text-sm font-medium text-black/60">Name *</label>
                 <input type="text" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors"
+                  style={inputFont}
                   placeholder="Max Mustermann" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-black/60">E-Mail-Adresse *</label>
                 <input type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors"
+                  style={inputFont}
                   placeholder="m.mustermann@hs-mainz.de" />
               </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-black/60">Rolle *</label>
               <select value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors bg-white">
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 transition-colors bg-white"
+                style={inputFont}>
                 <option value="mitarbeiterin">MitarbeiterIn</option>
                 <option value="admin">Admin</option>
               </select>
