@@ -30,7 +30,8 @@ import { commuteStats,
 import { eq, and, desc, asc, gte } from 'drizzle-orm'
 import { runXmlImport } from './jobs/xmlImport.js'
 import type { Context } from 'hono'
-import { ALLOWED_EMAIL_DOMAIN, auth } from './auth.js'
+import { auth } from './auth.js'
+import { ALLOWED_EMAIL_DOMAIN } from './config.js'
 
 import { startScheduler } from './cron/scheduler.js'
 type AuthUser = {
@@ -594,7 +595,8 @@ app.get('/api/learning_facilities', async (c) => {
 })
 
  app.post("/admin/import", async (c) => {
-  if (!requireAuth(c)) return c.json({ success: false, message: 'Nicht autorisiert' }, 401)
+  // Schreibt externe Daten in die Datenbank — nur Admins.
+  if (!requireAuth(c, 'admin')) return c.json({ success: false, message: 'Nicht autorisiert' }, 401)
 
   try {
     await runXmlImport();

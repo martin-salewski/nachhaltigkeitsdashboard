@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { isProductionDeployment } from '../config.js';
 
 function getTransporter() {
   return nodemailer.createTransport({
@@ -16,6 +17,13 @@ const FROM = process.env.SMTP_FROM ?? 'noreply@hs-mainz.de';
 
 async function send(email: string, subject: string, text: string, html: string, devLabel: string, link: string) {
   if (!process.env.SMTP_HOST) {
+    // Der Link enthält den Reset-Token und ist damit ein Anmeldeersatz. In der
+    // Entwicklung ist die Konsolenausgabe bequem; in einem echten Deployment
+    // würde sie jedes Einladungs- und Reset-Token in die Container-Logs
+    // schreiben. Dort lieber laut scheitern, damit der Admin es merkt.
+    if (isProductionDeployment) {
+      throw new Error('SMTP_HOST ist nicht gesetzt — Mailversand nicht konfiguriert.');
+    }
     console.log(`[DEV] ${devLabel} für ${email}: ${link}`);
     return;
   }

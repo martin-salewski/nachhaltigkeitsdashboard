@@ -2,18 +2,14 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins/admin";
 import { APIError } from "better-auth/api";
+import { ALLOWED_EMAIL_DOMAIN, baseURL } from "./config.js";
 import { db } from "./drizzle/db.js";
 import { user, session, account, verification } from "./drizzle/schema.js";
 import { sendInviteLinkEmail, sendResetLinkEmail } from "./services/email.js";
 
 // Secure-Cookies werden an der öffentlichen URL festgemacht, nicht an NODE_ENV:
-// NODE_ENV wird im Container nicht gesetzt, und ein vergessenes Flag würde die
-// Session über HTTPS unnötig ohne Secure-Attribut ausliefern.
-const baseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+// ein vergessenes Flag würde die Session über HTTPS ohne Secure-Attribut ausliefern.
 const useSecureCookies = baseURL.startsWith("https://");
-
-/** Accounts sind auf Dienstadressen der Hochschule beschränkt. */
-export const ALLOWED_EMAIL_DOMAIN = "@hs-mainz.de";
 
 const trustedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
@@ -55,6 +51,12 @@ export const auth = betterAuth({
 
   advanced: {
     useSecureCookies,
+    // Ohne diese Angabe findet Better Auth keine Client-IP und zählt alle
+    // Anmeldeversuche in einen gemeinsamen Topf — ein einzelner Nutzer könnte
+    // damit alle anderen aussperren. nginx setzt X-Real-IP auf $remote_addr.
+    ipAddress: {
+      ipAddressHeaders: ["x-real-ip", "x-forwarded-for"],
+    },
     defaultCookieAttributes: {
       httpOnly: true,
       sameSite: "lax",
